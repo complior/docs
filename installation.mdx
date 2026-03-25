@@ -1,30 +1,46 @@
 ---
 title: Installation
-description: "Install Complior CLI — npm, npx, or cargo."
+description: "Install Complior CLI — npx, npm, curl, or cargo."
 ---
 
 ## Install
 
 <Tabs>
-  <Tab title="npm">
+  <Tab title="npx (recommended)">
+    No install needed — runs directly:
+    ```bash
+    npx complior scan
+    npx complior init
+    npx complior eval --target http://localhost:3000/api/chat
+    ```
+
+    For persistent use, install globally:
     ```bash
     npm install -g complior
     ```
   </Tab>
-  <Tab title="npx (no install)">
+  <Tab title="curl">
     ```bash
-    npx complior scan
+    curl -fsSL https://get.complior.dev | sh
+    ```
+
+    Detects your OS and architecture, downloads the latest release, and adds `complior` to your PATH.
+  </Tab>
+  <Tab title="npm">
+    ```bash
+    npm install -g complior
     ```
   </Tab>
   <Tab title="cargo (Rust binary)">
     ```bash
     cargo install complior-cli
     ```
+    Builds from source. Requires Rust toolchain.
   </Tab>
 </Tabs>
 
 <Info>
-  **Requirements:** Node.js 18+ for the Engine. Rust toolchain is optional (only needed for building TUI from source).
+  **Requirements:** Node.js 18+ for the Engine. Rust toolchain is only needed for `cargo install` or building TUI from source.
 </Info>
 
 ## Verify installation
@@ -43,6 +59,54 @@ complior doctor
 <Check>
   All green checks mean Complior is ready. If any component shows an issue, `complior doctor` will suggest how to fix it.
 </Check>
+
+## LLM configuration
+
+Some features require an LLM API key: `complior scan --llm`, `complior eval --llm`, `complior fix --ai`.
+
+After `complior init`, add your LLM settings to `.complior/.env`:
+
+```bash
+# .complior/.env
+LLM_PROVIDER=openai              # openai | anthropic | openrouter | ollama
+LLM_MODEL=gpt-4o                 # model name
+LLM_API_KEY=sk-...               # your API key
+```
+
+<Tabs>
+  <Tab title="OpenAI">
+    ```bash
+    LLM_PROVIDER=openai
+    LLM_MODEL=gpt-4o
+    LLM_API_KEY=sk-...
+    ```
+  </Tab>
+  <Tab title="Anthropic">
+    ```bash
+    LLM_PROVIDER=anthropic
+    LLM_MODEL=claude-sonnet-4-20250514
+    LLM_API_KEY=sk-ant-...
+    ```
+  </Tab>
+  <Tab title="OpenRouter">
+    ```bash
+    LLM_PROVIDER=openrouter
+    LLM_MODEL=anthropic/claude-sonnet-4-20250514
+    LLM_API_KEY=sk-or-...
+    ```
+  </Tab>
+  <Tab title="Ollama (local)">
+    ```bash
+    LLM_PROVIDER=ollama
+    LLM_MODEL=llama3
+    # No API key needed — runs locally
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+  `.complior/.env` is gitignored by default. Never commit API keys to version control.
+</Warning>
 
 ## What gets installed
 
