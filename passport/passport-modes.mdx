@@ -1,22 +1,21 @@
 ---
 title: "Passport Modes"
-sidebarTitle: "3 Modes"
-description: "Three ways to generate a passport: Auto (from code), Runtime (from observation), Manual (from form)."
+sidebarTitle: "2 Modes"
+description: "Two ways to generate a passport: Auto (from code) and Runtime (from observation)."
 ---
 
 ## Mode comparison
 
-| | Mode 1: Auto | Mode 2: Runtime | Mode 3: Manual |
-|---|---|---|---|
-| **Input** | Source code (AST) | MCP tool calls + Eval | User form |
-| **Command** | `complior agent init` | `complior proxy` / `eval` | SaaS wizard |
-| **Auto-fill** | 65–70% | 40–70% | 0% (with Registry pre-fill) |
-| **Confidence** | ~0.42 | 0.55 | N/A (attestation) |
-| **Verification** | Code-verified | Behavior-observed | Unverified |
-| **Use case** | Own code | Black-box vendor agent | Vendor AI (no API) |
-| **User** | Developer | DevOps / Platform Eng | DPO / Compliance |
-| **Product** | CLI (free) | CLI + SaaS | SaaS (paid) |
-| **Status** | **Production** | Planned | SaaS Sprint |
+| | Mode 1: Auto | Mode 2: Runtime |
+|---|---|---|
+| **Input** | Source code (AST) | MCP tool calls + Eval |
+| **Command** | `complior init` | `complior proxy` / `eval` |
+| **Auto-fill** | 65–70% | 40–70% |
+| **Confidence** | ~0.42 | 0.55 |
+| **Verification** | Code-verified | Behavior-observed |
+| **Use case** | Own code | Black-box vendor agent |
+| **User** | Developer | DevOps / Platform Eng |
+| **Status** | **Production** | Planned |
 
 ## Mode 1: Auto (from code)
 
@@ -41,9 +40,3 @@ Two data sources:
 <Note>
   Mode 2 is planned. MCP Proxy infrastructure is 60% built. Eval integration is in development.
 </Note>
-
-## Mode 3: Manual (SaaS)
-
-SaaS Dashboard wizard with 5-step form. Pre-filled from AI Registry (5,011+ tools) — vendor DPA status, risk score, data residency, known capabilities.
-
-**Best for:** Vendor AI services like Notion AI, Intercom Fin, Stripe Radar — no code, no API.

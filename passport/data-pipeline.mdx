@@ -1,7 +1,7 @@
 ---
 title: "Data Pipeline"
 sidebarTitle: "Data Pipeline"
-description: "12 stages from 0% to 100%+ passport completeness — init through production monitoring."
+description: "11 stages from 0% to 100%+ passport completeness — init through production monitoring."
 ---
 
 {/* NAPKIN: Paste into napkin.ai —
@@ -18,7 +18,6 @@ Stage 7: LLM Docs (complior fix --ai) — LLM auto-fills doc sections [AI-DRAFT]
 Stage 8: Eval Remediation (complior eval --fix) — Fix from eval findings — Planned (S12)
 Stage 9: MCP Proxy (complior proxy) — Runtime enrichment for black-box agents — Planned (S06)
 Stage 10: Monitor (complior monitor) — Drift detection, anomalies — Planned (S12+)
-Stage 11: SaaS (app.complior.dev) — All 78 fields via wizard — Planned (S09)
 */}
 
 ## Stage overview
@@ -36,7 +35,6 @@ Stage 11: SaaS (app.complior.dev) — All 78 fields via wizard — Planned (S09)
 | 8. Eval Remediation | `complior eval --fix` | Fix from eval findings | varies | Planned |
 | 9. MCP Proxy | `complior proxy` | Runtime enrichment | varies | Planned |
 | 10. Monitor | `complior monitor` | +4 drift fields | varies | Planned |
-| 11. SaaS | `app.complior.dev` | All 78 fields | 100% | Planned |
 
 ---
 
@@ -266,9 +264,3 @@ For black-box agents (no code, only MCP traffic). Enriches existing passport: `p
 **Command:** `complior monitor --source <langfuse|sdk-logs>`
 
 Post-deployment monitoring. Adds `compliance.monitoring` block: `monitoring_score`, `drift_detected`, `last_monitoring`, `anomalies[]`. Compares runtime behavior vs passport declarations (e.g., declared L3 but observed L5).
-
-### Stage 11: SaaS Dashboard
-
-**Platform:** `app.complior.dev`
-
-78-field wizard with AI Registry pre-fill (5,011+ tools). Import: A2A → passport. Sync: `complior sync --passport`. Mode 3 (Manual) passport generation for vendor AI without code or API access.
