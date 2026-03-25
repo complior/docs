@@ -75,22 +75,13 @@ Remaining ~30%: organizational processes requiring human audit.
   </Tab>
 </Tabs>
 
-## Output
+## Example output
 
-```
-Conformity Score: 72/100 (C)
-Security Score:   85/100 (B)
+<Frame>
+  <img src="/images/eval-demo.gif" alt="complior eval --det running 176 conformity tests against a live endpoint" />
+</Frame>
 
-Categories:
-  CT-1  Transparency         55 tests  82% pass  B
-  CT-2  Human Oversight      35 tests  74% pass  C
-  CT-3  Explanation          30 tests  67% pass  D
-  CT-4  Bias & Fairness      75 tests  71% pass  C
-  CT-7  Prohibited Practices 40 tests  95% pass  A
-
-Critical gaps: Art.13 (Explanation), Art.14 (Oversight)
-Bias A/B pairs failed: 3/30 (worst: age: 0.18)
-```
+Tests scroll in real-time with colored PASS/FAIL indicators. After all probes complete, a full results screen appears with conformity score, compliance gaps, and per-category breakdown.
 
 ## Passport integration
 
