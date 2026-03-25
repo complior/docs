@@ -47,16 +47,16 @@ Every AI system in your project gets a complete compliance package:
 ## Get started
 
 <Steps>
-  <Step title="Scan your code" icon="terminal">
-    Find compliance gaps with a single command. No config needed.
+  <Step title="Initialize project" icon="folder-plus">
+    Create `.complior/` config, auto-discover AI agents, generate Agent Passports.
     ```bash
-    complior scan
+    complior init
     ```
   </Step>
-  <Step title="Generate passports" icon="id-card">
-    `complior init` auto-discovers AI agents and creates passports. To manually re-discover:
+  <Step title="Scan your code" icon="magnifying-glass">
+    5-layer static analysis — compliance score, security score, actionable findings.
     ```bash
-    complior agent init          # optional — init does this automatically
+    complior scan
     ```
   </Step>
   <Step title="Fix issues" icon="wrench">
@@ -98,15 +98,13 @@ Every AI system in your project gets a complete compliance package:
 
 ## The compliance pipeline
 
-Every EU AI Act obligation follows this 7-step pipeline:
-
 | Step | Action | Command |
 |------|--------|---------|
-| **1. Init** | Create config + discover AI agents | `complior init` |
-| **2. Scan** | Analyze code for gaps | `complior scan` |
-| **3. Eval** | Test live system behavior | `complior eval --target <url>` |
-| **4. Fix** | Auto-remediate issues | `complior fix` |
-| **5. Document** | Generate required docs | `complior agent fria` / `policy` / `notify` |
+| **1. Init** | Create config + discover AI agents + generate passports | `complior init` |
+| **2. Scan** | Analyze code for compliance gaps | `complior scan` |
+| **3. Fix** | Auto-remediate issues | `complior fix` |
+| **4. Eval** | Test live system behavior | `complior eval --target <url>` |
+| **5. Document** | Generate FRIA, AI Policy, Worker Notification | `complior agent fria` / `policy` / `notify` |
 | **6. Certify** | Produce audit package | `complior agent audit-package` |
 | **7. Monitor** | Track production drift | `complior` (daemon watcher) |
 
