@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "venus",
+  "theme": "maple",
   "name": "Complior",
   "colors": {
     "primary": "#1A56DB",
