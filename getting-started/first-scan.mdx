@@ -54,6 +54,14 @@ Add flags for deeper analysis. Each tier builds on the previous:
 
     Adds Semgrep (AST rules), Bandit (Python security), ModelScan (model backdoor detection). Cached in `~/.complior/tools/`.
   </Tab>
+  <Tab title="Tier 2+: Deep + LLM">
+    ```bash
+    complior scan --deep --llm
+    ```
+    **Coverage:** 85–90% · **Dependencies:** Auto-download + BYOK API key
+
+    Full offline analysis: L1–L5 + Semgrep/Bandit/ModelScan. Maximum local depth without cloud.
+  </Tab>
   <Tab title="Tier 3: Cloud">
     ```bash
     complior scan --cloud
@@ -89,10 +97,11 @@ Each finding maps to a specific EU AI Act obligation:
 }
 ```
 
-Explain any finding in plain language:
+Explain any finding in plain language via MCP:
 
 ```bash
-complior explain OBL-050
+# Via MCP tool (Claude Code, Cursor, etc.):
+complior_explain("OBL-050")
 ```
 
 ## Dual scoring

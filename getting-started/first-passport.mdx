@@ -1,9 +1,9 @@
 ---
 title: Your First Agent Passport
-description: "Generate a standardized AI system identity card — 36 fields, ed25519 signed, 85–95% auto-filled from code."
+description: "Generate a standardized AI system identity card — 36 fields, ed25519 signed, 65–70% auto-filled from code."
 ---
 
-**Agent Passport** is a standardized identity card for each AI system in your project. Complior analyzes your code's AST and auto-fills 85–95% of the 36 fields — identity, permissions, constraints, risk class, and compliance status.
+**Agent Passport** is a standardized identity card for each AI system in your project. Complior analyzes your code's AST and auto-fills 65–70% of the 36 fields — identity, permissions, constraints, risk class, and compliance status.
 
 <Info>
   **Why it matters:** EU AI Act Art.26 requires every deployer to maintain a registry of AI systems. Art.27 requires FRIA for high-risk systems. Art.49 requires EU Database registration. The passport is your answer to the regulator.
@@ -11,8 +11,11 @@ description: "Generate a standardized AI system identity card — 36 fields, ed2
 
 ## Generate passports
 
+Passports are created automatically during `complior init` or the first `complior scan`. You can also generate them manually:
+
 ```bash
-complior agent init
+complior agent init             # manual discovery (optional)
+complior agent init --force     # regenerate all passports
 ```
 
 Complior discovers AI agents through framework detection (57+ frameworks) and AST analysis:
@@ -56,7 +59,7 @@ Complior discovers AI agents through framework detection (57+ frameworks) and AS
 
 ## What needs manual input
 
-After `agent init`, ~8 fields remain empty. Fill them to reach 100% completeness:
+After auto-discovery, ~8 fields remain empty. Fill them to reach 100% completeness:
 
 ```bash
 complior agent completeness order-processor
@@ -133,6 +136,6 @@ This happens via the `scan.completed` event in the background daemon. You don't 
     Auto-fix compliance issues and generate documents.
   </Card>
   <Card title="Passport Deep Dive" icon="id-card" href="/passport/overview">
-    3 modes, 10-stage data pipeline, all 36 fields.
+    3 modes, 12-stage data pipeline, all 36 fields.
   </Card>
 </CardGroup>

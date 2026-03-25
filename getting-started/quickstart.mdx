@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: "5 commands from zero to audit-ready compliance artifacts."
+description: "4 commands from zero to audit-ready compliance artifacts."
 ---
 
 Go from an unscanned project to a full compliance package in under 5 minutes.
@@ -13,10 +13,10 @@ Go from an unscanned project to a full compliance package in under 5 minutes.
     complior init
     ```
 
-    The wizard walks you through 8 steps: Theme → Project type → Trust level → Frameworks → Role → Industry → AI systems → Summary. This creates `profile.json` which determines your risk classification.
+    The wizard walks you through 8 steps: Theme → Project type → Trust level → Frameworks → Role → Industry → AI systems → Summary. This creates `profile.json` and **automatically discovers AI agents**, generating Agent Passports with 65–70% of fields auto-filled from AST analysis.
 
     <Tip>
-      If you skip this step, Complior still works — but risk classification will be based only on code autonomy level, not your industry domain.
+      `complior agent init` is optional — `init` does agent discovery automatically. Use `agent init --force` to regenerate passports manually.
     </Tip>
   </Step>
 
@@ -45,38 +45,6 @@ Go from an unscanned project to a full compliance package in under 5 minutes.
     ```
 
     {/* PLACEHOLDER: Screenshot of CLI scan output. 900×500px dark terminal */}
-  </Step>
-
-  <Step title="Generate Agent Passports">
-    Discover AI agents in your code and create identity cards automatically.
-
-    ```bash
-    complior agent init
-    ```
-
-    Complior analyzes your AST and auto-fills 85–95% of the 36 passport fields:
-
-    ```
-    Scanning project for AI agents...
-
-    Found 2 AI agents:
-
-    #1 order-processor
-       Framework: LangChain  │  Model: GPT-4 (OpenAI)
-       Autonomy: L3 (Supervised)  │  Risk: HIGH
-       Completeness: 68% (19/27 required fields)
-       → .complior/agents/order-processor-manifest.json ✓
-
-    #2 support-bot
-       Framework: Vercel AI  │  Model: Claude 3.5 (Anthropic)
-       Autonomy: L4 (Autonomous)  │  Risk: HIGH
-       Completeness: 71% (20/27 required fields)
-       → .complior/agents/support-bot-manifest.json ✓
-
-    Passports signed with ed25519 ✓
-    ```
-
-    {/* PLACEHOLDER: Screenshot of agent init output. 900×400px dark terminal */}
   </Step>
 
   <Step title="Auto-fix compliance issues">
@@ -138,7 +106,7 @@ Go from an unscanned project to a full compliance package in under 5 minutes.
 
 ## What you now have
 
-After these 5 commands, your project contains:
+After these 4 commands, your project contains:
 
 ```
 project/
@@ -173,7 +141,7 @@ project/
     Test your live AI system with 680 dynamic probes.
   </Card>
   <Card title="Agent Passport" icon="id-card" href="/passport/overview">
-    Explore the 36 fields, 3 generation modes, and 10-stage data pipeline.
+    Explore the 36 fields, 3 generation modes, and 12-stage data pipeline.
   </Card>
   <Card title="Compliance Documents" icon="file-shield" href="/compliance-docs/overview">
     See all 6 document types Complior generates for you.

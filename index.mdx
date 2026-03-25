@@ -16,13 +16,13 @@ description: "Complior — open-source AI compliance platform for EU AI Act. Sca
     5-layer static analysis with compliance score 0–100. Detects 57+ AI frameworks.
   </Card>
   <Card title="Test AI Systems" icon="flask-vial" href="/eval/overview">
-    680 dynamic probes on live endpoints — bias A/B testing, transparency, prohibited practices.
+    680 dynamic probes on live endpoints — bias A/B testing, transparency, security attacks.
   </Card>
   <Card title="Auto-Fix Issues" icon="wrench" href="/fix/overview">
     18 remediation strategies across code, docs, config, and dependencies. Preview and undo.
   </Card>
   <Card title="Generate Passport" icon="id-card" href="/passport/overview">
-    36-field AI system identity card. Ed25519 signed. 85–95% auto-filled from code.
+    AI system identity card. Ed25519 signed. 65–70% auto-filled from code at init.
   </Card>
 </CardGroup>
 
@@ -54,9 +54,9 @@ Every AI system in your project gets a complete compliance package:
     ```
   </Step>
   <Step title="Generate passports" icon="id-card">
-    Discover AI agents in your codebase and create identity cards automatically.
+    `complior init` auto-discovers AI agents and creates passports. To manually re-discover:
     ```bash
-    complior agent init
+    complior agent init          # optional — init does this automatically
     ```
   </Step>
   <Step title="Fix issues" icon="wrench">
@@ -102,14 +102,13 @@ Every EU AI Act obligation follows this 7-step pipeline:
 
 | Step | Action | Command |
 |------|--------|---------|
-| **1. Discover** | Find AI systems in code | `complior agent init` |
-| **2. Classify** | Determine risk class | Automatic (autonomy × domain) |
-| **3. Scan** | Analyze code for gaps | `complior scan` |
-| **3b. Eval** | Test live system behavior | `complior eval --target <url>` |
+| **1. Init** | Create config + discover AI agents | `complior init` |
+| **2. Scan** | Analyze code for gaps | `complior scan` |
+| **3. Eval** | Test live system behavior | `complior eval --target <url>` |
 | **4. Fix** | Auto-remediate issues | `complior fix` |
-| **5. Document** | Generate required docs | `complior agent fria` |
-| **6. Monitor** | Track production drift | `complior monitor` |
-| **7. Certify** | Produce audit package | `complior audit` |
+| **5. Document** | Generate required docs | `complior agent fria` / `policy` / `notify` |
+| **6. Certify** | Produce audit package | `complior agent audit-package` |
+| **7. Monitor** | Track production drift | `complior` (daemon watcher) |
 
 <Tip>
   **Agent Passport** is the central data layer — it receives data from every step and feeds into documents, scoring, and certification.
@@ -119,7 +118,7 @@ Every EU AI Act obligation follows this 7-step pipeline:
 
 <CardGroup cols={2}>
   <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
-    5 commands from zero to audit-ready. Takes 3 minutes.
+    4 commands from zero to audit-ready. Takes 3 minutes.
   </Card>
   <Card title="Installation" icon="download" href="/installation">
     npm, npx, or cargo — choose your install method.

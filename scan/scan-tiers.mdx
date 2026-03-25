@@ -55,6 +55,18 @@ Tier 3+: Full Cloud — complior scan --deep --llm --cloud — Coverage 95%+ —
     | **Dependencies** | Auto-download ~150 MB (one-time, cached in `~/.complior/tools/`) |
     | **What adds** | Semgrep (multi-lang AST rules), Bandit (Python security), ModelScan (model backdoor detection) |
   </Tab>
+  <Tab title="Tier 2+: Deep + LLM">
+    ```bash
+    complior scan --deep --llm
+    ```
+    | | |
+    |---|---|
+    | **Coverage** | 85–90% |
+    | **Dependencies** | Auto-download ~150 MB + BYOK API key |
+    | **What runs** | L1–L5 + Semgrep/Bandit/ModelScan. Full offline analysis with maximum local depth. |
+
+    Best option when you want maximum depth without sending any data to the cloud.
+  </Tab>
   <Tab title="Tier 3: Cloud">
     ```bash
     complior scan --cloud

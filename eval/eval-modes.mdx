@@ -36,6 +36,33 @@ complior eval <url> --full -j 10        # 10 parallel workers
 | **Security** | `--security` | 300 | Injection, jailbreak, exfiltration, toxicity, content safety | Nothing |
 | **Full** | `--full` | 680 | All of the above | BYOK API key |
 
+## All eval flags
+
+| Flag | What it does |
+|------|-------------|
+| `--det` | Run deterministic tests (168 tests, default when no flags) |
+| `--llm` | Run LLM-judged tests (212 tests, requires BYOK API key) |
+| `--security` | Run security probes (300 probes, OWASP LLM Top 10) |
+| `--full` | Run all tests (168 + 212 + 300) |
+| `--agent NAME` | Agent name for passport attribution |
+| `--categories CATS` | Filter by category (comma-separated: CT-1,CT-4,CT-7) |
+| `--ci` | CI mode: exit 2 if score < threshold |
+| `--threshold N` | Score threshold for CI pass (default: 60) |
+| `--model MODEL` | LLM model override for judge (e.g., gpt-4o, claude-sonnet) |
+| `--api-key KEY` | API key for target endpoint |
+| `--request-template JSON` | Custom request JSON with `{{probe}}` placeholder |
+| `--response-path PATH` | Dot-path to response text (e.g., `result.text`) |
+| `--headers JSON` | Custom headers as JSON |
+| `-j` / `--concurrency N` | Parallel test execution (1–50, default: 5) |
+| `--last` | Show last eval result |
+| `--failures` | Show only failures (with `--last`) |
+| `--verbose` | Show verbose test details |
+| `--json` | Output as JSON |
+| `--remediation` | Generate full remediation report |
+| `--fix` | Auto-apply fixes from eval failures |
+| `--dry-run` | Dry-run mode for `--fix` |
+| `--no-remediation` | Disable inline remediation recommendations |
+
 ## Concurrency
 
 Default: 5 parallel workers. Range: 1–50. Each phase runs in parallel internally, phases run sequentially. 50ms stagger between requests for rate-limit safety.

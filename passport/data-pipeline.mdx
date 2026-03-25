@@ -1,58 +1,155 @@
 ---
 title: "Data Pipeline"
 sidebarTitle: "Data Pipeline"
-description: "10 stages from 0% to 100%+ passport completeness."
+description: "12 stages from 0% to 100%+ passport completeness — init through production monitoring."
 ---
 
 {/* NAPKIN: Paste into napkin.ai —
-Passport Data Fill Pipeline: From 0% to 100%
+Passport Data Fill Pipeline: From 0% to 100%+
 
-Stage 0: Onboarding (complior init) — Creates profile.json — 0% passport — Done
-Stage 1: Agent Init (complior agent init) — 44 fields auto-filled from AST — 65-70% — Done
-Stage 2: Scan (complior scan) — Adds score + last_scan — 70% — Done
-Stage 3: Manual Fill (TUI/JSON edit) — Adds owner, disclosure, lifecycle — 93% — Done
-Stage 4: Documents (complior fix) — Sets fria_completed, policy_generated — 100% — Done
-Stage 5: Live Update (daemon watcher) — Score refreshes on every file save — 100% maintained — Done
-Stage 6: Eval (complior eval) — Adds 20+ behavioral fields — 100%+ — Planned
-Stage 7: MCP Proxy — Runtime enrichment for black-box agents — Planned
-Stage 8: Monitor (complior monitor) — Drift detection, anomalies — Planned
-Stage 9: SaaS Dashboard — All 78 fields via wizard — Planned
+Stage 0: Init (complior init) — Creates .complior/ + auto-discovers agents + creates passports — 0% → 65-70% — Done
+Stage 1: Scan (complior scan) — Adds score + last_scan, auto-discovers new agents — 65% → 70% — Done
+Stage 2: Fix (complior fix) — Score increases via auto-rescan — score↑ — Done
+Stage 3: Manual Fill (TUI/JSON edit) — Adds owner, disclosure, lifecycle — 70% → 93% — Done
+Stage 4: Documents (agent fria/notify/policy/audit-package) — Sets fria_completed, policy_generated — 93% → 100% — Done
+Stage 5: Eval (complior eval) — Adds 20+ behavioral fields (conformity, security, categories) — 100% → 100%+ — Done
+Stage 6: Live Update (daemon watcher) — Score refreshes on every file save + auto-discover — 100% maintained — Done
+Stage 7: LLM Docs (complior fix --ai) — LLM auto-fills doc sections [AI-DRAFT] — Planned (S06)
+Stage 8: Eval Remediation (complior eval --fix) — Fix from eval findings — Planned (S12)
+Stage 9: MCP Proxy (complior proxy) — Runtime enrichment for black-box agents — Planned (S06)
+Stage 10: Monitor (complior monitor) — Drift detection, anomalies — Planned (S12+)
+Stage 11: SaaS (app.complior.dev) — All 78 fields via wizard — Planned (S09)
 */}
 
 ## Stage overview
 
 | Stage | Command | Fields added | Completeness | Status |
 |-------|---------|-------------|-------------|--------|
-| 0. Onboarding | `complior init` | profile.json (not passport) | 0% | Done |
-| 1. Agent Init | `complior agent init` | ~44 auto-filled from AST | 65–70% | Done |
-| 2. Scan | `complior scan` | +2 (score, last_scan) | 70% | Done |
-| 3. Manual Fill | TUI / JSON edit | +6 (owner, disclosure) | 93% | Done |
-| 4. Documents | `agent fria/notify/policy` | +3 flags | 100% | Done |
-| 5. Live Update | Daemon watcher | Score refresh | 100% | Done |
-| 6. Eval | `complior eval --target` | +20 behavioral fields | 100%+ | Planned |
-| 7. MCP Proxy | `complior proxy` | Runtime enrichment | varies | Planned |
-| 8. Monitor | `complior monitor` | +4 drift fields | varies | Planned |
-| 9. SaaS | `app.complior.dev` | All 78 fields | 100% | Planned |
+| 0. Init | `complior init` | ~44 auto-filled from AST + profile + defaults | 0% → 65–70% | Done |
+| 1. Scan | `complior scan` | +2 (score, last_scan) + auto-discover new agents | 70% | Done |
+| 2. Fix | `complior fix` | score↑ via auto-rescan | varies | Done |
+| 3. Manual Fill | TUI / JSON edit | +6 (owner, disclosure, lifecycle) | 93% | Done |
+| 4. Documents | `agent fria/notify/policy` | +3 flags + audit ZIP | 100% | Done |
+| 5. Eval | `complior eval --target` | +20 behavioral fields | 100%+ | Done |
+| 6. Live Update | Daemon watcher | Score refresh + auto-discover | 100% | Done |
+| 7. LLM Docs | `complior fix --ai` | Doc enrichment | varies | Planned |
+| 8. Eval Remediation | `complior eval --fix` | Fix from eval findings | varies | Planned |
+| 9. MCP Proxy | `complior proxy` | Runtime enrichment | varies | Planned |
+| 10. Monitor | `complior monitor` | +4 drift fields | varies | Planned |
+| 11. SaaS | `app.complior.dev` | All 78 fields | 100% | Planned |
 
-## Stage 1: What gets auto-filled
+---
 
-After `complior agent init`, these fields are populated from AST analysis:
+## Stage 0: Init
 
-- **Identity:** agent_id, name, display_name, description, version, timestamps
-- **Autonomy:** type, level L1–L5, human_approval_gates count, unsupervised_actions count, killSwitchPresent
-- **Tech Stack:** framework, model provider/id/deployment, data_residency
-- **Permissions:** tools list, data_access (read/write/delete), denied actions
-- **Compliance:** risk_class, applicable_articles, obligations met/pending
-- **Logging:** actions_logged, retention_days
-- **Lifecycle:** status ("draft"), next_review (created + 90 days)
-- **Oversight:** (for high-risk/L3+ only) responsible_person, override_mechanism, escalation
-- **Signature:** ed25519 auto-sign
+**Command:** `complior init` or `complior` (TUI onboarding wizard)
 
-## Stage 3: What needs manual input
+**Completeness:** 0% → 65–70%
 
-```bash
-complior agent completeness order-processor
-```
+Two entry paths:
+
+- **CLI:** `complior init` → creates `.complior/` + `profile.json` + `project.toml` → auto-discovers AI agents → creates passports
+- **TUI:** `complior` (no args) → 8-step onboarding wizard → auto-scan on completion → agents discovered via `scan.completed` event
+
+<Tip>
+  `complior agent init` is optional — `init` does agent discovery automatically. Use `agent init --force` to regenerate passports.
+</Tip>
+
+### What gets auto-filled (~44 fields)
+
+<AccordionGroup>
+  <Accordion title="Identity" icon="fingerprint">
+    `agent_id` (UUID), `name`, `display_name`, `description`, `version`, `created`, `updated`
+
+    Source: entry file name, framework config, auto-generated UUID.
+  </Accordion>
+  <Accordion title="Autonomy" icon="robot">
+    `type` (autonomous/assistive/hybrid), `autonomy_level` (L1–L5), `autonomy_evidence` (gates, unsupervised, no_logging counts), `killSwitchPresent`
+
+    Source: L4 AST pattern matching.
+  </Accordion>
+  <Accordion title="Tech Stack" icon="microchip">
+    `framework`, `model.provider`, `model.model_id`, `model.deployment`, `model.data_residency`
+
+    Source: L3 dependency analysis + SDK detection + profile.json.
+  </Accordion>
+  <Accordion title="Permissions" icon="key">
+    `permissions.tools`, `permissions.data_access` (read/write/delete), `permissions.denied`, `permissions.data_boundaries`, `interop.mcp_servers`
+
+    Source: Permission scanner — analyzes tool definitions, DB patterns, explicit deny lists, MCP config.
+  </Accordion>
+  <Accordion title="Constraints" icon="lock">
+    `human_approval_required`, `prohibited_actions`, `escalation_rules`, `rate_limits` (default: 100/min), `budget` (default: $5.00/session)
+
+    Source: AST (confirm/approve gates) + defaults.
+  </Accordion>
+  <Accordion title="Compliance" icon="shield-check">
+    `risk_class`, `applicable_articles`, `obligations_met`, `obligations_pending`, `complior_score` (0 until first scan), `last_scan`
+
+    Source: Computed from autonomy level × project domain.
+  </Accordion>
+  <Accordion title="Logging & Lifecycle" icon="clock">
+    `actions_logged`, `retention_days` (default: 365), `lifecycle.status` ("draft"), `lifecycle.next_review` (created + 90 days)
+
+    Source: AST logging patterns + defaults.
+  </Accordion>
+  <Accordion title="Signature & Source Tracking" icon="stamp">
+    Ed25519 signature (algorithm, public_key, signed_at, hash, value). Source tracking: `source.mode` ("auto"), `source.confidence`, `fields_auto_filled`, `fields_manual`.
+  </Accordion>
+</AccordionGroup>
+
+### What stays empty (filled in Stage 3)
+
+`owner.team`, `owner.contact`, `owner.responsible_person`, `disclosure.user_facing`, `disclosure.disclosure_text`, `disclosure.ai_marking`, `lifecycle.deployed_since`
+
+---
+
+## Stage 1: Scan
+
+**Command:** `complior scan` (any tier)
+
+**Completeness:** 65% → 70%
+
+Every scan triggers two actions:
+1. `initPassport()` — discovers **new** agents (idempotent, skips existing)
+2. `updatePassportsAfterScan()` — updates score on **all** passports
+
+**Fields updated:**
+- `compliance.complior_score` — 0 → actual score (e.g. 74)
+- `compliance.last_scan` — timestamp
+- `updated` — new timestamp
+- `signature` — re-signed
+
+### Scan sub-tiers
+
+| Tier | Command | Coverage |
+|------|---------|---------|
+| Tier 1 | `complior scan` | 60–70% |
+| Tier 1+ | `complior scan --llm` | 70–80% |
+| Tier 2 | `complior scan --deep` | 80–85% |
+| Tier 2+ | `complior scan --deep --llm` | 85–90% |
+| Tier 3 | `complior scan --cloud` | 90–95% |
+| Tier 3+ | `complior scan --deep --llm --cloud` | 95%+ |
+
+Score differs per tier, but passport update is the same (score + last_scan).
+
+---
+
+## Stage 2: Fix
+
+**Command:** `complior fix`
+
+**Completeness:** score↑ via auto-rescan
+
+Applies recommended remediation strategies to code. Triggers auto-rescan → passport score updates. Score can jump significantly (e.g. 60 → 85 after fixes). Use `--dry-run` to preview without applying.
+
+---
+
+## Stage 3: Manual Fill
+
+**Command:** TUI Passport page (hotkey `P`) or JSON edit
+
+**Completeness:** 70% → 93%
 
 Typically 8 fields remain after auto-fill:
 
@@ -66,3 +163,112 @@ Typically 8 fields remain after auto-fill:
 | `disclosure.ai_marking.responses_marked` | true | Implementation choice |
 | `lifecycle.deployed_since` | "2026-04-01" | Deploy date |
 | `lifecycle.status` | "active" | Lifecycle state |
+
+---
+
+## Stage 4: Documents
+
+**Completeness:** 93% → 100%
+
+<AccordionGroup>
+  <Accordion title="4a: FRIA (Art.27)" icon="file-shield">
+    ```bash
+    complior agent fria my-bot --organization "ACME Corp"
+    ```
+    Sets `fria_completed: true`, `fria_date`. 14+ fields pre-filled from passport. Use `--impact`, `--mitigation`, `--approval` for manual sections. Mandatory for high-risk systems.
+  </Accordion>
+  <Accordion title="4b: Worker Notification (Art.26(7))" icon="users">
+    ```bash
+    complior agent notify my-bot --company-name "ACME"
+    ```
+    Sets `worker_notification_sent: true`, `worker_notification_date`. 9 fields pre-filled. Required for high-risk AI in workplace.
+  </Accordion>
+  <Accordion title="4c: AI Usage Policy (Art.6)" icon="scroll">
+    ```bash
+    complior agent policy my-bot --industry hr
+    ```
+    Sets `policy_generated: true`, `policy_date`. 11 fields pre-filled. `--industry hr|finance|healthcare` for domain-specific templates.
+  </Accordion>
+  <Accordion title="4d: Audit Package" icon="box-archive">
+    ```bash
+    complior agent audit-package
+    ```
+    ZIP bundle: passport + scan report + eval report + FRIA + evidence chain. Does not update passport directly.
+  </Accordion>
+</AccordionGroup>
+
+27/27 required fields filled = 100% completeness. Passport re-signed with ed25519 after every update.
+
+---
+
+## Stage 5: Eval
+
+**Command:** `complior eval --target <url> --agent <name>`
+
+**Completeness:** 100% → 100%+
+
+Tests the **running** AI system (not code). Adds `compliance.eval` block with 20+ fields:
+
+| Field | Example |
+|-------|---------|
+| `eval_score` | 72/100 |
+| `eval_grade` | "C" (A–F) |
+| `eval_tier` | "full" / "det" / "llm" / "security" |
+| `eval_security_score` | 85/100 |
+| `eval_security_grade` | "B" |
+| `eval_tests_total/passed/failed` | 670 / 487 / 183 |
+| `eval_critical_gaps` | ["Art.50", "Art.14"] |
+| `eval_category_pass_rates` | 11 categories (CT-1..CT-11) |
+| `bias_pairs_failed` | 3 |
+| `hallucination_rate` | 0.12 |
+| `avg_latency_ms` | 1200 |
+
+Eval tiers: `--det` (168 deterministic), `--llm` (+212 LLM-judged), `--security` (300 attack probes), `--full` (680 all).
+
+<Info>
+  Scan checks **CODE**. Eval checks **BEHAVIOR**. Both scores in the passport = full picture.
+</Info>
+
+---
+
+## Stage 6: Live Update
+
+**Trigger:** Daemon file watcher + `scan.completed` event
+
+**Completeness:** 100% maintained
+
+Every file save → 200ms debounce → re-scan → score update in passport. New AI SDK imports → auto-discovery of new agents. Passport always contains current `complior_score` and `last_scan`.
+
+---
+
+## Planned stages
+
+### Stage 7: LLM Docs
+
+**Command:** `complior fix --ai`
+
+LLM auto-fills empty sections in FRIA/Policy/Notification documents. Markers `[AI-DRAFT]` for human review. Pre-fill context: 9 fields from passport → LLM prompt. Fills "Specific Risks", "Mitigation Measures", "Monitoring Plan".
+
+### Stage 8: Eval Remediation
+
+**Command:** `complior eval --fix`
+
+Remediation Knowledge Base (11 category playbooks). Eval Fix Generator: system prompt patches, API config, guardrail config. Eval findings → FixDiff pipeline (new FindingSource: "eval").
+
+### Stage 9: MCP Proxy
+
+**Command:** `complior proxy connect`
+
+For black-box agents (no code, only MCP traffic). Enriches existing passport: `permissions.tools` (runtime), `data_access` (observed), `autonomy_level` (inferred). `source.mode` → "runtime" (confidence 0.55 vs AST ~0.42).
+
+### Stage 10: Monitor
+
+**Command:** `complior monitor --source <langfuse|sdk-logs>`
+
+Post-deployment monitoring. Adds `compliance.monitoring` block: `monitoring_score`, `drift_detected`, `last_monitoring`, `anomalies[]`. Compares runtime behavior vs passport declarations (e.g., declared L3 but observed L5).
+
+### Stage 11: SaaS Dashboard
+
+**Platform:** `app.complior.dev`
+
+78-field wizard with AI Registry pre-fill (5,011+ tools). Import: A2A → passport. Sync: `complior sync --passport`. Mode 3 (Manual) passport generation for vendor AI without code or API access.

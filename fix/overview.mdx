@@ -7,7 +7,7 @@ description: "Deterministic auto-remediation engine — 18 strategies across cod
 `complior fix` analyzes findings from your scan and applies remediation strategies. Every fix follows: structured plan → score prediction → diff preview → backup → apply → validate → evidence chain.
 
 ```bash
-complior fix [--dry-run] [--ai] [--all] [--json]
+complior fix [--dry-run] [--ai] [--json] [--source scan|eval]
 ```
 
 <Warning>
@@ -44,8 +44,7 @@ complior fix                  # Preview + apply all fixes
 complior fix --dry-run        # Preview only, don't apply
 complior fix --ai             # Apply + LLM enrichment for documents
 complior fix --json           # JSON output for CI/CD
-complior fix --undo           # Undo last fix
-complior fix --undo --all     # Undo all fixes
+complior fix --source eval    # Fix from eval findings (default: scan)
 ```
 
 ## TUI Fix page

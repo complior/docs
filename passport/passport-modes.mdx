@@ -10,8 +10,8 @@ description: "Three ways to generate a passport: Auto (from code), Runtime (from
 |---|---|---|---|
 | **Input** | Source code (AST) | MCP tool calls + Eval | User form |
 | **Command** | `complior agent init` | `complior proxy` / `eval` | SaaS wizard |
-| **Auto-fill** | 85–95% | 40–70% | 0% (with Registry pre-fill) |
-| **Confidence** | 0.85–0.95 | 0.55 | N/A (attestation) |
+| **Auto-fill** | 65–70% | 40–70% | 0% (with Registry pre-fill) |
+| **Confidence** | ~0.42 | 0.55 | N/A (attestation) |
 | **Verification** | Code-verified | Behavior-observed | Unverified |
 | **Use case** | Own code | Black-box vendor agent | Vendor AI (no API) |
 | **User** | Developer | DevOps / Platform Eng | DPO / Compliance |
@@ -21,7 +21,8 @@ description: "Three ways to generate a passport: Auto (from code), Runtime (from
 ## Mode 1: Auto (from code)
 
 ```bash
-complior agent init
+complior init          # auto-discovers agents during project init
+complior agent init    # optional: manual re-discovery / --force regenerate
 ```
 
 Scans your codebase through AST analysis. Detects frameworks (57+), models, permissions, human gates, autonomy level, kill-switch. Risk class computed from autonomy × project domain.

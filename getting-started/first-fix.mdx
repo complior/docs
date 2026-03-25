@@ -104,19 +104,9 @@ Press `F` in TUI to open the Fix page. Select a fix to see the exact diff:
 | `d` | Toggle diff preview |
 | `Enter` | Apply selected fixes |
 
-## Undo
+## Backups
 
-Every fix creates a backup. Undo at any time:
-
-```bash
-# Undo last fix
-complior fix --undo
-
-# Undo all fixes
-complior fix --undo --all
-```
-
-Backups are stored in `.complior/backups/` and fix history in `.complior/fixes-history.json`.
+Every fix creates a backup before applying. Backups and fix history are stored in `.complior/fixes-history.json` for auditability.
 
 ## Document generation pipeline
 
