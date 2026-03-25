@@ -7,16 +7,22 @@ Go from an unscanned project to a full compliance package in under 5 minutes.
 
 <Steps>
   <Step title="Initialize project">
-    Create the `.complior/` config directory with a guided onboarding wizard.
+    Create the `.complior/` config directory and project profile.
 
     ```bash
     complior init
     ```
 
-    The wizard walks you through 8 steps: Theme → Project type → Trust level → Frameworks → Role → Industry → AI systems → Summary. This creates `profile.json` and **automatically discovers AI agents**, generating Agent Passports with 65–70% of fields auto-filled from AST analysis.
+    ```
+    Initialized .complior/ at ./.complior
+      Created: project.toml (TUI config)
+      Created: profile.json (engine config)
+
+    Run `complior` to start the dashboard, or `complior scan` to check compliance.
+    ```
 
     <Tip>
-      `complior agent init` is optional — `init` does agent discovery automatically. Use `agent init --force` to regenerate passports manually.
+      For interactive setup, run `complior` (TUI) — the onboarding wizard walks you through 8 steps: Theme → Project type → Trust level → Frameworks → Role → Industry → AI systems → Summary.
     </Tip>
   </Step>
 
@@ -27,55 +33,86 @@ Go from an unscanned project to a full compliance package in under 5 minutes.
     complior scan
     ```
 
-    Expected output:
     ```
-    Scanning project...
-    ✓ L1: File presence        14 checks
-    ✓ L2: Document structure    8 checks
-    ✓ L3: Dependencies         12 checks
-    ✓ L4: Code patterns        23 checks
+    * Complior v1.0.0  ·  EU AI Act Compliance Scanner
+    --------------------------------------------------------------------------------
+    Scanning  .
+    Files     500 collected
+    Elapsed   2.1s
+    Layers    L1 File Presence · L2 Document Structure · L3 Dependencies
+              · L4 Code Patterns · NHI Secrets · GPAI Systemic Risk
 
-    Compliance Score: 47/100 (F)
-    Security Score:   62/100 (D)
+    --------------------------------------------------------------------------------
+    COMPLIANCE SCORE                                                   40 / 100  D
+    SECURITY SCORE                                                             N/A
+    Run `complior eval --security <url>` for security scoring
+    --------------------------------------------------------------------------------
+    !! Score capped — critical violations limit maximum achievable score
 
-    Findings: 23 total
-      8 critical  │  7 high  │  5 medium  │  3 low
+    Framework Breakdown
+      EU AI Act                   40 / 100   ########------------
 
-    Frameworks: EU AI Act, OWASP LLM Top 10, MITRE ATLAS
+    Layer Results
+      L1    File Presence            FAIL   11 issues found
+      L2    Document Structure       FAIL   7 issues found
+      L3    Dependencies             WARN   1 issues found
+      L4    Code Patterns            WARN   35 issues found
+      NHI   Secrets                  PASS   1 checks passed
+      CROSS Cross-Layer              WARN   2 issues found
+      GPAI  Systemic Risk            PASS   2 checks passed
+
+    --------------------------------------------------------------------------------
+    FINDINGS  (56 total · 5 high · 42 medium)
+    --------------------------------------------------------------------------------
+
+      L1 File Presence
+        F-001  !  HIGH  [L1]  Art. 26(4) · Agent Passport
+           No Agent Passport found — AI SDK detected but no
+           .complior/agents/*-manifest.json (Art. 26(4))
+           Fix:  Run `complior agent init` to generate an Agent Passport
+
+        F-002  !  HIGH  [L1]  Art. 6(2) · High-Risk Domain: Finance
+           Code matches Finance / Credit patterns (Annex III §5(b)).
+           AI system is likely high-risk under EU AI Act Art. 6(2).
+           File:  src/data/industry-patterns.ts:43
+
+      ...
+
+    --------------------------------------------------------------------------------
+    QUICK ACTIONS
+    --------------------------------------------------------------------------------
+    Auto-fix available        complior fix
+    Deep scan                 complior scan --deep
+    Full interactive view     complior tui
+    Export JSON               complior scan --json > report.json
+
+    Next: fix 5 high-severity issues to improve your score
     ```
 
-    {/* PLACEHOLDER: Screenshot of CLI scan output. 900×500px dark terminal */}
+    The scan auto-discovers AI agents and creates Agent Passports during the first run.
   </Step>
 
   <Step title="Auto-fix compliance issues">
-    Preview and apply remediation strategies.
+    Preview what can be fixed and the predicted score impact.
+
+    ```bash
+    complior fix --dry-run
+    ```
+
+    ```
+    Dry-Run Fix Analysis (offline estimate)
+    Fixable: 29 findings
+    Predicted: 40 -> 72 (+32)
+    ```
+
+    Apply all fixes:
 
     ```bash
     complior fix
     ```
 
-    ```
-    15 fixes available:
-
-    #  Fix                              Category   Score
-    1  Add @complior/sdk wrapper         A: Code    +8
-    2  Add disclosure system message     A: Code    +4
-    3  Generate FRIA (Art.27)            B: Docs    +5
-    4  Generate AI Usage Policy          B: Docs    +3
-    5  Generate Worker Notification      B: Docs    +2
-    6  Add input validation              A: Code    +3
-    7  Add error handling                A: Code    +2
-    8  Harden .gitignore                 C: Config  +1
-    ...
-
-    Predicted score: 47 → 75 (+28)
-
-    Applied 15 fixes ✓
-    New Compliance Score: 75/100 (C)
-    ```
-
     <Note>
-      Use `complior fix --dry-run` to preview without applying. Use `complior fix --ai` to have LLM fill in document placeholders.
+      Use `complior fix --ai` to have LLM fill in document placeholders (requires `.complior/.env` with LLM config).
     </Note>
   </Step>
 
@@ -96,7 +133,7 @@ Go from an unscanned project to a full compliance package in under 5 minutes.
     | `P` | Passport | All AI systems, completeness %, obligations |
     | `O` | Obligations | 108 EU AI Act obligations with status |
     | `T` | Timeline | Visual countdown to Aug 2, 2026 |
-    | `R` | Report | Export: PDF, MD, JSON, SARIF |
+    | `R` | Report | Export: JSON, SARIF |
     | `L` | Log | Daemon events, system messages |
     | `C` | Chat | LLM compliance assistant |
 
@@ -111,20 +148,14 @@ After these 4 commands, your project contains:
 ```
 project/
 ├── .complior/
-│   ├── config.toml                        # Project configuration
+│   ├── project.toml                       # Project configuration
 │   ├── profile.json                       # Domain, data types, risk level
 │   ├── agents/
-│   │   ├── order-processor-manifest.json  # Agent Passport #1 (ed25519 signed)
-│   │   └── support-bot-manifest.json      # Agent Passport #2 (ed25519 signed)
+│   │   └── my-agent-manifest.json         # Agent Passport (ed25519 signed)
 │   ├── evidence/
 │   │   └── chain.json                     # Tamper-proof evidence chain
-│   ├── fria/
-│   │   └── fria-order-processor.md        # FRIA report (80% pre-filled)
-│   ├── docs/
-│   │   ├── ai-policy-hr.md               # AI Usage Policy
-│   │   └── worker-notification.md         # Worker Notification (Art.26(7))
 │   └── reports/
-│       └── scan-report.json              # Latest scan results
+│       └── scan-report.json               # Latest scan results
 ```
 
 <Check>
