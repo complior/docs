@@ -1,9 +1,9 @@
 ---
 title: Your First Scan
-description: "Understand what complior scan does, how the 5 layers work, and what the output means."
+description: "Understand what complior scan does, how the layers work, and what the output means."
 ---
 
-`complior scan` analyzes your code through 5 deterministic layers — from file presence checks to deep AST pattern matching. Result: a compliance score, a security score, and actionable findings.
+`complior scan` analyzes your code through multiple deterministic layers — from file presence checks to deep AST pattern matching. Result: a compliance score and actionable findings.
 
 ```bash
 complior scan
@@ -13,17 +13,75 @@ complior scan
   **Principle:** LLM **never** makes compliance decisions. Layers L1–L4 are fully deterministic (AST + rules). Layer L5 is opt-in and only clarifies uncertain findings.
 </Warning>
 
-## The 5 analysis layers
+## Analysis layers
 
 | Layer | What it checks | Weight | Example findings |
 |-------|---------------|--------|-----------------|
-| **L1: Files** | Presence of key files (README, LICENSE, .env) | 1.00 | Missing privacy policy, no AI disclosure file |
-| **L2: Documents** | Structure and required sections in docs | 0.95 | Incomplete risk assessment, missing FRIA |
-| **L3: Dependencies** | AI packages, lockfile, licenses, CVEs | 0.90 | Unvetted AI framework, vulnerable dependency |
-| **L4: Code Patterns** | 40+ AST patterns, secrets, permissions | 0.75 | No SDK wrapper, missing disclosure, weak logging |
-| **L5: LLM** | Deep semantic analysis (opt-in, BYOK) | varies | Implicit bias in prompt template, ambiguous consent |
+| **L1: File Presence** | Key files (README, LICENSE, .env, passport) | 1.00 | Missing privacy policy, no Agent Passport |
+| **L2: Document Structure** | Required sections in compliance docs | 0.95 | Incomplete FRIA, shallow worker notification |
+| **L3: Dependencies** | AI packages, lockfile, licenses, CVEs | 0.90 | Unvetted AI framework, missing bias testing lib |
+| **L4: Code Patterns** | 40+ AST patterns, SDK wrappers, permissions | 0.75 | Bare LLM API call, missing error handling |
+| **NHI: Secrets** | 37 secret patterns (API keys, tokens) | — | Exposed API key in source |
+| **CROSS: Cross-Layer** | Consistency rules across layers | — | Logging without retention, kill-switch without tests |
+| **GPAI: Systemic Risk** | GPAI compliance checks | — | Systemic risk indicators |
+| **L5: LLM** | Deep semantic analysis (opt-in, `--llm`) | varies | Implicit bias in prompt template |
 
-{/* PLACEHOLDER: Diagram — Scan Pipeline L1→L5 → Score. SVG 500×700px */}
+## Understanding the output
+
+```
+* Complior v1.0.0  ·  EU AI Act Compliance Scanner
+--------------------------------------------------------------------------------
+Scanning  .
+Files     500 collected
+Elapsed   2.1s
+Layers    L1 File Presence · L2 Document Structure · L3 Dependencies
+          · L4 Code Patterns · NHI Secrets · GPAI Systemic Risk
+
+--------------------------------------------------------------------------------
+COMPLIANCE SCORE                                                   40 / 100  D
+SECURITY SCORE                                                             N/A
+Run `complior eval --security <url>` for security scoring
+--------------------------------------------------------------------------------
+!! Score capped — critical violations limit maximum achievable score
+
+Layer Results
+  L1    File Presence            FAIL   11 issues found
+  L2    Document Structure       FAIL   7 issues found
+  L3    Dependencies             WARN   1 issues found
+  L4    Code Patterns            WARN   35 issues found
+  NHI   Secrets                  PASS   1 checks passed
+  CROSS Cross-Layer              WARN   2 issues found
+  GPAI  Systemic Risk            PASS   2 checks passed
+```
+
+<Info>
+  **Security Score** is only available via `complior eval --security <url>` against a live endpoint. Scan analyzes code statically — it cannot test runtime behavior.
+</Info>
+
+## Understanding findings
+
+Each finding has a severity, layer, EU AI Act article, and a suggested fix:
+
+```
+F-001  !  HIGH  [L1]  Art. 26(4) · Agent Passport
+   No Agent Passport found — AI SDK detected but no
+   .complior/agents/*-manifest.json (Art. 26(4))
+   Fix:  Run `complior agent init` to generate an Agent Passport
+
+F-002  !  HIGH  [L1]  Art. 6(2) · High-Risk Domain: Finance
+   Code matches Finance / Credit patterns (Annex III §5(b)).
+   AI system is likely high-risk under EU AI Act Art. 6(2).
+   File:  src/data/industry-patterns.ts:43
+
+F-020  *  MEDIUM  [L4]  Art. 50(1) · Bare LLM API Call
+   WARNING: OpenAI bare API call — eu-ai-act-OBL-015 Art. 50(1)
+   File:  src/data/eval/remediation/owasp-llm05.ts:12
+   Fix:  Wrap LLM calls with complior.wrap() or add AI disclosure
+```
+
+<Warning>
+  **Critical caps:** If prohibited practices score = 0, maximum overall is capped at 29. If transparency = 0, capped at 49.
+</Warning>
 
 ## Scan tiers
 
@@ -36,7 +94,7 @@ Add flags for deeper analysis. Each tier builds on the previous:
     ```
     **Coverage:** 60–70% · **Time:** 2–5 sec · **Dependencies:** None
 
-    Our code checks L1–L4 plus Rust-native secret detection (37 patterns). Works completely offline.
+    L1–L4 checks plus Rust-native secret detection (37 patterns). Works completely offline.
   </Tab>
   <Tab title="Tier 1+: LLM">
     ```bash
@@ -68,7 +126,7 @@ Add flags for deeper analysis. Each tier builds on the previous:
     ```
     **Coverage:** 90–95% · **Dependencies:** Cloud account
 
-    Adds AI SBOM + CycloneDX, Presidio PII detection (50+ EU types), vendor Art.25 assessment, PDF export.
+    Adds AI SBOM + CycloneDX, Presidio PII detection (50+ EU types), vendor Art.25 assessment.
   </Tab>
   <Tab title="Full">
     ```bash
@@ -77,45 +135,6 @@ Add flags for deeper analysis. Each tier builds on the previous:
     **Coverage:** 95%+ · All flags combined for maximum analysis depth.
   </Tab>
 </Tabs>
-
-## Understanding findings
-
-Each finding maps to a specific EU AI Act obligation:
-
-```json
-{
-  "id": "no-disclosure",
-  "severity": "critical",
-  "layer": "L4",
-  "obligation": "OBL-050",
-  "article": "Art.50",
-  "message": "No AI disclosure found in agent code",
-  "file": "src/agents/order-agent.ts",
-  "line": 42,
-  "fixable": true,
-  "strategy": "A2"
-}
-```
-
-Explain any finding in plain language via MCP:
-
-```bash
-# Via MCP tool (Claude Code, Cursor, etc.):
-complior_explain("OBL-050")
-```
-
-## Dual scoring
-
-Every scan produces **two** independent scores:
-
-| Score | Source | Frameworks | Scale |
-|-------|--------|-----------|-------|
-| **Compliance** | Code analysis against regulations | EU AI Act, AIUC-1, ISO 42001 | 0–100 (A–F) |
-| **Security** | Attack surface analysis | OWASP LLM Top 10, MITRE ATLAS | 0–100 (A–F) |
-
-<Warning>
-  **Critical caps:** If prohibited practices score = 0, maximum overall is capped at 29. If transparency = 0, capped at 49.
-</Warning>
 
 ## CI/CD integration
 

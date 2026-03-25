@@ -11,16 +11,96 @@ description: "Generate a standardized AI system identity card — 36 fields, ed2
 
 ## Generate passports
 
-Passports are created automatically during `complior init` or the first `complior scan`. You can also generate them manually:
+Passports are created automatically during the first `complior scan`. You can also generate them manually:
 
 ```bash
 complior agent init             # manual discovery (optional)
 complior agent init --force     # regenerate all passports
 ```
 
-Complior discovers AI agents through framework detection (57+ frameworks) and AST analysis:
+```
+Discovering AI agents in .
 
-{/* PLACEHOLDER: Screenshot of `agent init` output showing 2 discovered agents. 900×400px */}
+Found 3 agent(s):
+
+  @complior/engine-openai
+  @complior/engine-anthropic
+  @complior/engine-langchain
+
+Passports signed with ed25519 ✓
+```
+
+If passports already exist, `agent init` skips them:
+
+```
+Skipped 3 existing passport(s):
+
+  @complior/engine-openai (already exists, use --force to overwrite)
+  @complior/engine-anthropic (already exists, use --force to overwrite)
+  @complior/engine-langchain (already exists, use --force to overwrite)
+
+All discovered agents already have passports.
+Run `complior agent init --force` to regenerate.
+```
+
+## List and inspect passports
+
+```bash
+complior agent list
+```
+
+```
+◆ Agent Passports  ·  1 agent
+
+--------------------------------------------------------------------------------
+NAME                 LEVEL    TYPE         RISK       SCORE    STATUS
+--------------------------------------------------------------------
+e2e-test-agent       L3       autonomous   high       40       draft
+```
+
+```bash
+complior agent show e2e-test-agent
+```
+
+```
+◆ Agent Passport  ·  E2E Test Agent
+--------------------------------------------------------------------------------
+
+ID       imported-e2e-test-agent-1773499654476
+Version  1.0.0
+Autonomy L3 (autonomous)
+
+COMPLIANCE
+  Risk class:   high
+  Score:       40/100
+
+MODEL
+  Provider:    anthropic
+  Deployment:  https://example.com/agent
+
+CONSTRAINTS
+  Rate limit:  60/min
+  Budget:      $10.00/session
+
+PERMISSIONS
+  Tools:       file_read, code_write
+
+DISCLOSURE
+  User-facing: no
+  AI marking:  no
+
+LIFECYCLE
+  Status:      draft
+  Frequency:   every 90d
+
+SOURCE
+  Mode:        semi-auto
+  Confidence:  50%
+
+SIGNATURE
+  Signed at:   2026-03-25T13:41:13.038Z
+  Algorithm:   ed25519
+```
 
 ## What gets auto-filled
 
@@ -59,61 +139,88 @@ Complior discovers AI agents through framework detection (57+ frameworks) and AS
 
 ## What needs manual input
 
-After auto-discovery, ~8 fields remain empty. Fill them to reach 100% completeness:
+Check what's missing with `complior agent completeness`:
 
 ```bash
-complior agent completeness order-processor
+complior agent completeness e2e-test-agent
 ```
 
 ```
-Missing fields (8):
-  owner.team                ← "Backend Engineering"
-  owner.contact             ← "eng-lead@company.com"
-  owner.responsible_person  ← "Maria Schmidt"
-  disclosure.user_facing    ← true
-  disclosure.disclosure_text← "This bot uses AI"
-  disclosure.ai_marking.responses_marked ← true
-  lifecycle.deployed_since  ← "2026-04-01"
-  lifecycle.status          ← "active"
+Passport Completeness: e2e-test-agent
+
+  Score: [#####################---------] 70%
+  Fields: 19/27 required fields filled
+
+  MISSING FIELD                            OBLIG.     ARTICLE      DESCRIPTION
+  -------------------------------------------------------------------------------
+  owner.team                               OBL-012    Art.26(6)    Team responsible for AI system
+  owner.contact                            OBL-012    Art.26(6)    Contact for AI system inquiries
+  owner.responsible_person                 OBL-012    Art.26(6)    Designated responsible natural person
+  model.model_id                           OBL-013    Art.13(3)    Model identifier for traceability
+  constraints.human_approval_required      OBL-014    Art.14(4)    Actions requiring human approval
+  constraints.prohibited_actions           OBL-005    Art.5        Prohibited AI practices
+  disclosure.disclosure_text               OBL-050    Art.50(1)    Disclosure text shown to users
+  lifecycle.next_review                    OBL-026L   Art.26(5)    Next scheduled review date
 ```
 
 <Tip>
-  Edit directly in JSON (`nano .complior/agents/order-processor-manifest.json`) or use the TUI Passport page (hotkey `P`).
+  Edit directly in JSON (`nano .complior/agents/my-agent-manifest.json`) or use the TUI Passport page (hotkey `P`).
 </Tip>
 
 ## Passport validation
 
 ```bash
-# Check schema + signature + completeness
-complior agent validate order-processor
+complior agent validate e2e-test-agent
+```
 
-# For CI — exit code 1 on errors
-complior agent validate order-processor --ci
+```
+e2e-test-agent: PASS
+  Schema:       pass
+  Signature:    pass
+  Completeness: 70%
+  WARN: Passport is still in draft status
+  WARN: Completeness score 70% is below 80% threshold
+```
 
-# Verbose — see every field status
-complior agent validate order-processor --verbose
+For CI — exit code 1 on errors:
+
+```bash
+complior agent validate e2e-test-agent --ci
 ```
 
 ## Export formats
 
 Share your passport in industry-standard formats:
 
+```bash
+complior agent export e2e-test-agent --format a2a
+```
+
+```
+Exporting passport 'e2e-test-agent' as a2a...
+
+Passport exported: e2e-test-agent
+  Format:   a2a
+  Valid:    yes
+  Saved to: .complior/exports/e2e-test-agent-a2a.json
+```
+
 <Tabs>
   <Tab title="Google A2A">
     ```bash
-    complior agent export order-processor --format a2a
+    complior agent export <name> --format a2a
     ```
     Google's Agent-to-Agent Card format for agent interoperability.
   </Tab>
   <Tab title="AIUC-1">
     ```bash
-    complior agent export order-processor --format aiuc-1
+    complior agent export <name> --format aiuc-1
     ```
     EU AI Use Case certification format (6 categories).
   </Tab>
   <Tab title="NIST AI RMF">
     ```bash
-    complior agent export order-processor --format nist
+    complior agent export <name> --format nist
     ```
     US NIST AI Risk Management Framework format.
   </Tab>

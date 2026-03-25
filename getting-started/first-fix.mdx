@@ -1,9 +1,9 @@
 ---
 title: Your First Auto-Fix
-description: "Auto-remediate compliance issues with 18 strategies across code, docs, config, and dependencies."
+description: "Auto-remediate compliance issues with strategies across code, docs, config, and dependencies."
 ---
 
-`complior fix` analyzes findings from your scan and applies remediation strategies. Every fix: structured plan → score prediction → diff preview → backup → apply → validate → evidence chain.
+`complior fix` analyzes findings from your scan and applies remediation strategies. Every fix: structured plan → score prediction → backup → apply → evidence chain.
 
 <Warning>
   **Principle:** Fixer never invents compliance logic. All fixes are deterministic (templates + strategies). LLM only enriches document content with explicit `--ai` opt-in.
@@ -17,76 +17,115 @@ Always preview before applying:
 complior fix --dry-run
 ```
 
-{/* PLACEHOLDER: Screenshot of fix preview table with 8 fixes and predicted score. 900×400px */}
+```
+Dry-Run Fix Analysis (offline estimate)
+Fixable: 29 findings
+Predicted: 40 -> 72 (+32)
+```
 
 ## Apply fixes
 
 ```bash
-# Apply all available fixes
 complior fix
+```
 
-# Apply with LLM document enrichment
-complior fix --ai
+```
+◆ Complior Fix Report  ·  EU AI Act Auto-Remediation
+--------------------------------------------------------------------------------
+Project   .
+Fixes     33 applied · 0 failed
+--------------------------------------------------------------------------------
+
+DOCUMENTS CREATED  (5 fixes)
+
+  ✓  Art. 4    AI Literacy Doc Structure  [SCAFFOLD]
+               → docs/compliance/ai-literacy-policy.md
+               TODO: Company Name, Approved By (Name, Title), Training levels
+               ↳ Fill placeholders and review with your compliance team
+
+  ✓  Art. 26   Monitoring Policy Structure  [SCAFFOLD]
+               → docs/compliance/monitoring-policy.md
+               TODO: Company Name, Approved By (Name, Title), AI systems in scope
+               ↳ Fill placeholders and review with your compliance team
+
+  ✓  Art. 27   FRIA Structure Validation  [SCAFFOLD]
+               → docs/compliance/fria.md
+               TODO: Company Name, Approved By (Name, Title), Affected groups
+               ↳ Fill placeholders and review with your compliance team
+
+  ...
+
+CODE FIXES — INLINE  (27 fixes)
+
+  SDK Wrapper (5 fixes)
+    ✓  Art. 50(1) Wrap bare LLM client calls with @complior/sdk  [SCAFFOLD]
+                   src/middleware/ai-compliance-wrapper.ts
+    ✓  Art. 50(1) Wrap bare LLM call
+                   src/data/eval/remediation/owasp-llm05.ts (+ 2 more)
+
+  Security Fixes (5 fixes)
+    ✓  Art. 15(4) Add compliance-aware error handling  [SCAFFOLD]
+                   src/middleware/ai-error-handler.ts
+    ✓  Art. 15(4) Fix security risk
+                   src/data/eval/remediation/owasp-llm05.ts (+ 1 more)
+
+  Error Handling (17 fixes)
+    ✓  Art. 14   Add error handling
+                   src/domain/passport/agent-discovery.test.ts (+ 4 more)
+
+CONFIG & DEPENDENCIES  (1 fix)
+
+  ✓  Art. 10   Bias Testing Missing → bias-testing.config.json  [SCAFFOLD]
+               ↳ Populate test data paths and adjust fairness thresholds
+
+--------------------------------------------------------------------------------
+NEXT STEPS
+--------------------------------------------------------------------------------
+Fill TODO fields          Review generated documents and complete manual sections
+Review code changes       Verify inline fixes don't break functionality
+Re-scan                   complior scan
+--------------------------------------------------------------------------------
+UPGRADE [SCAFFOLD] → PRODUCTION
+--------------------------------------------------------------------------------
+LLM-enhanced docs         complior fix --ai
+Coding agent via MCP      Connect your coding agent to Complior MCP server
+                          See: complior mcp --help
 ```
 
 <Note>
-  `--ai` uses your BYOK LLM key to fill `[TO BE COMPLETED]` placeholders in generated documents. Without `--ai`, documents are scaffolded with placeholders but all compliance flags are already set.
+  `[SCAFFOLD]` means the file was created from a template with placeholders. Use `complior fix --ai` to have LLM fill `[TO BE COMPLETED]` sections, or connect a coding agent via MCP to complete them.
 </Note>
 
-## 5 fix categories
+## Fix types
+
+Fixes are grouped by what they modify:
 
 <Tabs>
-  <Tab title="A: Code (9 strategies)">
-    Modifies your source code to add compliance features:
+  <Tab title="Documents">
+    Generates legally required compliance documents from templates:
 
-    | Strategy | What it does | Score impact |
-    |----------|-------------|-------------|
-    | A1 | Add `@complior/sdk` wrapper | +5–8 |
-    | A2 | Add disclosure system message (Art.50) | +3–5 |
-    | A3 | Add input validation | +2–3 |
-    | A4 | Add error handling | +1–2 |
-    | A5 | Add logging (Art.12) | +2–3 |
-    | A6 | Add permission guard | +2–3 |
-    | A7 | Add HITL gate (Art.14) | +3–5 |
-    | A8 | Config hardening | +1–2 |
-    | A9 | Fix unsafe deserialization | +1–2 |
+    - **FRIA** (Art.27) — Fundamental Rights Impact Assessment
+    - **AI Usage Policy** (Art.6) — industry-specific templates
+    - **Worker Notification** (Art.26(7)) — employee notification
+    - **AI Literacy** (Art.4) — training documentation
+    - **Monitoring Policy** (Art.26) — post-market monitoring
+    - **Art.5 Screening** (Art.5) — prohibited practices report
+
+    Documents are pre-filled from Agent Passport data. The more complete your passport, the fewer manual sections remain.
   </Tab>
-  <Tab title="B: Documents (6 strategies)">
-    Generates legally required compliance documents:
+  <Tab title="Code (inline)">
+    Modifies source code to add compliance features:
 
-    | Strategy | Document | Article | Pre-fill |
-    |----------|----------|---------|---------|
-    | B1 | FRIA (Fundamental Rights Impact Assessment) | Art.27 | 80% |
-    | B2 | AI Usage Policy | Art.6 | 60% |
-    | B3 | Risk Management Plan | Art.9 | 40% |
-    | B4 | Technical Documentation | Art.11 | 50% |
-    | B5 | Worker Notification | Art.26(7) | 70% |
-    | B6 | Transparency Note | Art.50 | 60% |
-
-    <Tip>
-      Documents are pre-filled from Agent Passport data. The more complete your passport, the fewer manual sections remain.
-    </Tip>
+    - **SDK Wrapper** — wraps bare LLM calls with `@complior/sdk` for transparency (Art.50)
+    - **Error Handling** — adds try-catch around LLM calls (Art.14)
+    - **Security Fixes** — removes unsafe patterns like eval(), command injection (Art.15)
+    - **Compliance Middleware** — creates wrapper and error handler scaffolds
   </Tab>
-  <Tab title="C: Config (3 strategies)">
-    Hardens project configuration:
+  <Tab title="Config">
+    Creates configuration files:
 
-    - **C1:** Secret rotation recommendations
-    - **C2:** `.gitignore` hardening (AI keys, model files)
-    - **C3:** Docker security (non-root, read-only)
-  </Tab>
-  <Tab title="D: Dependencies (3 strategies)">
-    Fixes dependency-level issues:
-
-    - **D1:** CVE upgrade suggestions
-    - **D2:** License compatibility check
-    - **D3:** Model format validation (pickle → safetensors)
-  </Tab>
-  <Tab title="E: Passport (3 strategies)">
-    Updates passport fields based on scan results:
-
-    - **E1:** Risk level recalculation
-    - **E2:** Compliance field updates
-    - **E3:** Evidence chain entry
+    - **Bias Testing Config** — `bias-testing.config.json` with fairness thresholds (Art.10)
+    - **Gitignore Hardening** — adds AI keys, model files to `.gitignore`
   </Tab>
 </Tabs>
 
@@ -106,21 +145,21 @@ Press `F` in TUI to open the Fix page. Select a fix to see the exact diff:
 
 ## Backups
 
-Every fix creates a backup before applying. Backups and fix history are stored in `.complior/fixes-history.json` for auditability.
+Every fix creates a backup before applying. Fix history is stored in `.complior/fixes-history.json` for auditability.
 
 ## Document generation pipeline
 
-When fixes generate documents (B-strategies), the flow is:
+When fixes generate documents, the flow is:
 
 <Steps>
   <Step title="Scaffold">
-    `complior fix` creates document from template with passport data pre-filled (25–80%).
+    `complior fix` creates document from template with passport data pre-filled.
   </Step>
   <Step title="Placeholders">
-    Remaining sections contain `[TO BE COMPLETED: ...]` markers.
+    Remaining sections contain `[TO BE COMPLETED: ...]` markers and TODO lists.
   </Step>
   <Step title="LLM enrichment (optional)">
-    `complior fix --ai` sends 9 passport fields as context to LLM, which fills placeholders. LLM is wrapped through `@complior/sdk` proxy for safety.
+    `complior fix --ai` sends passport fields as context to LLM, which fills placeholders. Requires `.complior/.env` with LLM config.
   </Step>
   <Step title="Evidence">
     Fix recorded in evidence chain with SHA-256 hash + ed25519 signature.
@@ -131,7 +170,7 @@ When fixes generate documents (B-strategies), the flow is:
 
 <CardGroup cols={2}>
   <Card title="Compliance Documents" icon="file-shield" href="/compliance-docs/overview">
-    See all 6 document types and what they contain.
+    See all document types and what they contain.
   </Card>
   <Card title="Eval: Test Live Systems" icon="flask-vial" href="/eval/overview">
     Go beyond code scanning — test your AI system's actual behavior.
