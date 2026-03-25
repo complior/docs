@@ -1,97 +1,127 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: Introduction
+description: "Complior — open-source AI compliance platform for EU AI Act. Scan code, test AI systems, auto-fix issues, generate documents, and create audit-ready Agent Passports."
 ---
 
-## Setting up
+<Info>
+  **EU AI Act enforcement: August 2, 2026.** Complior gives development teams the tools to get compliant before the deadline — from code analysis to audit-ready documentation.
+</Info>
 
-Get your documentation site up and running in minutes.
+## What is Complior?
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+`complior` is an open-source CLI and platform for AI compliance. It scans your codebase, tests your AI systems, auto-fixes compliance issues, and generates legally required documents — all from the terminal.
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Scan Code" icon="magnifying-glass" href="/scan/overview">
+    5-layer static analysis with compliance score 0–100. Detects 57+ AI frameworks.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Test AI Systems" icon="flask-vial" href="/eval/overview">
+    680 dynamic probes on live endpoints — bias A/B testing, transparency, prohibited practices.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Auto-Fix Issues" icon="wrench" href="/fix/overview">
+    18 remediation strategies across code, docs, config, and dependencies. Preview and undo.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Generate Passport" icon="id-card" href="/passport/overview">
+    36-field AI system identity card. Ed25519 signed. 85–95% auto-filled from code.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What you get
 
-Everything you need to create world-class documentation.
+Every AI system in your project gets a complete compliance package:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={3}>
+  <Card title="Agent Passport" icon="passport">
+    Standardized identity card with 36 fields — risk class, autonomy level, permissions, compliance status.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Compliance Documents" icon="file-shield">
+    FRIA, AI Policy, Worker Notification, Technical Docs — pre-filled from your passport data.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Evidence Chain" icon="link">
+    Cryptographic proof of every action: SHA-256 hash → ed25519 signature → tamper-proof chain.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+{/* PLACEHOLDER: Screenshot — TUI Dashboard showing score, agents, timeline. 1200×700px dark terminal theme */}
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+## Get started
+
+<Steps>
+  <Step title="Scan your code" icon="terminal">
+    Find compliance gaps with a single command. No config needed.
+    ```bash
+    complior scan
+    ```
+  </Step>
+  <Step title="Generate passports" icon="id-card">
+    Discover AI agents in your codebase and create identity cards automatically.
+    ```bash
+    complior agent init
+    ```
+  </Step>
+  <Step title="Fix issues" icon="wrench">
+    Auto-remediate findings — add SDK wrappers, generate documents, harden config.
+    ```bash
+    complior fix
+    ```
+  </Step>
+  <Step title="Open dashboard" icon="gauge-high">
+    Launch the TUI with 9 interactive pages for full compliance visibility.
+    ```bash
+    complior
+    ```
+  </Step>
+</Steps>
+
+## Why Complior?
+
+<AccordionGroup>
+  <Accordion title="Developer-first" icon="code">
+    CLI, TUI, and MCP server — not a web form for lawyers. Works in the terminal alongside your code. Integrates with Claude Code, Cursor, Windsurf, and other AI agents.
+  </Accordion>
+  <Accordion title="Deterministic compliance" icon="shield-check">
+    LLM **never** makes compliance decisions. All checks are AST + rules (layers L1–L4). LLM only helps understand and fix issues (opt-in layer L5).
+  </Accordion>
+  <Accordion title="Works offline" icon="wifi-slash">
+    Base scan runs in 2–5 seconds with zero dependencies, zero internet, zero accounts. Install → works.
+  </Accordion>
+  <Accordion title="Audit-ready artifacts" icon="stamp">
+    Every action produces cryptographic evidence (SHA-256 + ed25519). Passports, documents, and evidence combine into an audit package for the regulator.
+  </Accordion>
+  <Accordion title="108 obligations mapped" icon="scale-balanced">
+    Full EU AI Act coverage with each obligation mapped to a concrete Complior feature. Plus ISO 42001, OWASP LLM Top 10, and MITRE ATLAS.
+  </Accordion>
+  <Accordion title="Free forever" icon="heart">
+    AGPLv3 open-source. Full daemon + TUI + CLI + SDK + MCP Server. No trial, no limits, no account required.
+  </Accordion>
+</AccordionGroup>
+
+## The compliance pipeline
+
+Every EU AI Act obligation follows this 7-step pipeline:
+
+| Step | Action | Command |
+|------|--------|---------|
+| **1. Discover** | Find AI systems in code | `complior agent init` |
+| **2. Classify** | Determine risk class | Automatic (autonomy × domain) |
+| **3. Scan** | Analyze code for gaps | `complior scan` |
+| **3b. Eval** | Test live system behavior | `complior eval --target <url>` |
+| **4. Fix** | Auto-remediate issues | `complior fix` |
+| **5. Document** | Generate required docs | `complior agent fria` |
+| **6. Monitor** | Track production drift | `complior monitor` |
+| **7. Certify** | Produce audit package | `complior audit` |
+
+<Tip>
+  **Agent Passport** is the central data layer — it receives data from every step and feeds into documents, scoring, and certification.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    5 commands from zero to audit-ready. Takes 3 minutes.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    npm, npx, or cargo — choose your install method.
+  </Card>
+</CardGroup>

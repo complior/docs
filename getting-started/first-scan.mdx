@@ -1,0 +1,128 @@
+---
+title: Your First Scan
+description: "Understand what complior scan does, how the 5 layers work, and what the output means."
+---
+
+`complior scan` analyzes your code through 5 deterministic layers — from file presence checks to deep AST pattern matching. Result: a compliance score, a security score, and actionable findings.
+
+```bash
+complior scan
+```
+
+<Warning>
+  **Principle:** LLM **never** makes compliance decisions. Layers L1–L4 are fully deterministic (AST + rules). Layer L5 is opt-in and only clarifies uncertain findings.
+</Warning>
+
+## The 5 analysis layers
+
+| Layer | What it checks | Weight | Example findings |
+|-------|---------------|--------|-----------------|
+| **L1: Files** | Presence of key files (README, LICENSE, .env) | 1.00 | Missing privacy policy, no AI disclosure file |
+| **L2: Documents** | Structure and required sections in docs | 0.95 | Incomplete risk assessment, missing FRIA |
+| **L3: Dependencies** | AI packages, lockfile, licenses, CVEs | 0.90 | Unvetted AI framework, vulnerable dependency |
+| **L4: Code Patterns** | 40+ AST patterns, secrets, permissions | 0.75 | No SDK wrapper, missing disclosure, weak logging |
+| **L5: LLM** | Deep semantic analysis (opt-in, BYOK) | varies | Implicit bias in prompt template, ambiguous consent |
+
+{/* PLACEHOLDER: Diagram — Scan Pipeline L1→L5 → Score. SVG 500×700px */}
+
+## Scan tiers
+
+Add flags for deeper analysis. Each tier builds on the previous:
+
+<Tabs>
+  <Tab title="Tier 1: Offline">
+    ```bash
+    complior scan
+    ```
+    **Coverage:** 60–70% · **Time:** 2–5 sec · **Dependencies:** None
+
+    Our code checks L1–L4 plus Rust-native secret detection (37 patterns). Works completely offline.
+  </Tab>
+  <Tab title="Tier 1+: LLM">
+    ```bash
+    complior scan --llm
+    ```
+    **Coverage:** 70–80% · **Time:** +5–15 sec · **Dependencies:** BYOK API key
+
+    Adds L5 LLM deep analysis. Findings in the 50–80% confidence zone get confirmed or rejected by LLM.
+  </Tab>
+  <Tab title="Tier 2: Deep">
+    ```bash
+    complior scan --deep
+    ```
+    **Coverage:** 80–85% · **Time:** 10–30 sec · **Dependencies:** Auto-download ~150 MB (one-time)
+
+    Adds Semgrep (AST rules), Bandit (Python security), ModelScan (model backdoor detection). Cached in `~/.complior/tools/`.
+  </Tab>
+  <Tab title="Tier 3: Cloud">
+    ```bash
+    complior scan --cloud
+    ```
+    **Coverage:** 90–95% · **Dependencies:** Cloud account (free: 5 scans/month)
+
+    Adds AI SBOM + CycloneDX, Presidio PII detection (50+ EU types), vendor Art.25 assessment, PDF export.
+  </Tab>
+  <Tab title="Full">
+    ```bash
+    complior scan --deep --llm --cloud
+    ```
+    **Coverage:** 95%+ · All flags combined for maximum analysis depth.
+  </Tab>
+</Tabs>
+
+## Understanding findings
+
+Each finding maps to a specific EU AI Act obligation:
+
+```json
+{
+  "id": "no-disclosure",
+  "severity": "critical",
+  "layer": "L4",
+  "obligation": "OBL-050",
+  "article": "Art.50",
+  "message": "No AI disclosure found in agent code",
+  "file": "src/agents/order-agent.ts",
+  "line": 42,
+  "fixable": true,
+  "strategy": "A2"
+}
+```
+
+Explain any finding in plain language:
+
+```bash
+complior explain OBL-050
+```
+
+## Dual scoring
+
+Every scan produces **two** independent scores:
+
+| Score | Source | Frameworks | Scale |
+|-------|--------|-----------|-------|
+| **Compliance** | Code analysis against regulations | EU AI Act, AIUC-1, ISO 42001 | 0–100 (A–F) |
+| **Security** | Attack surface analysis | OWASP LLM Top 10, MITRE ATLAS | 0–100 (A–F) |
+
+<Warning>
+  **Critical caps:** If prohibited practices score = 0, maximum overall is capped at 29. If transparency = 0, capped at 49.
+</Warning>
+
+## CI/CD integration
+
+```bash
+complior scan --ci --json --threshold 70
+```
+
+Exits with code 1 if compliance score falls below threshold. Outputs JSON or SARIF for GitHub Actions, GitLab CI, etc.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Your First Passport" icon="id-card" href="/getting-started/first-passport">
+    Generate identity cards for your AI agents.
+  </Card>
+  <Card title="Scan Tiers Deep Dive" icon="layer-group" href="/scan/scan-tiers">
+    Detailed comparison of all 6 scan tiers.
+  </Card>
+</CardGroup>

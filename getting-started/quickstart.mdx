@@ -1,0 +1,181 @@
+---
+title: Quick Start
+description: "5 commands from zero to audit-ready compliance artifacts."
+---
+
+Go from an unscanned project to a full compliance package in under 5 minutes.
+
+<Steps>
+  <Step title="Initialize project">
+    Create the `.complior/` config directory with a guided onboarding wizard.
+
+    ```bash
+    complior init
+    ```
+
+    The wizard walks you through 8 steps: Theme → Project type → Trust level → Frameworks → Role → Industry → AI systems → Summary. This creates `profile.json` which determines your risk classification.
+
+    <Tip>
+      If you skip this step, Complior still works — but risk classification will be based only on code autonomy level, not your industry domain.
+    </Tip>
+  </Step>
+
+  <Step title="Scan your code">
+    Run 5-layer static analysis on your project. No config file needed.
+
+    ```bash
+    complior scan
+    ```
+
+    Expected output:
+    ```
+    Scanning project...
+    ✓ L1: File presence        14 checks
+    ✓ L2: Document structure    8 checks
+    ✓ L3: Dependencies         12 checks
+    ✓ L4: Code patterns        23 checks
+
+    Compliance Score: 47/100 (F)
+    Security Score:   62/100 (D)
+
+    Findings: 23 total
+      8 critical  │  7 high  │  5 medium  │  3 low
+
+    Frameworks: EU AI Act, OWASP LLM Top 10, MITRE ATLAS
+    ```
+
+    {/* PLACEHOLDER: Screenshot of CLI scan output. 900×500px dark terminal */}
+  </Step>
+
+  <Step title="Generate Agent Passports">
+    Discover AI agents in your code and create identity cards automatically.
+
+    ```bash
+    complior agent init
+    ```
+
+    Complior analyzes your AST and auto-fills 85–95% of the 36 passport fields:
+
+    ```
+    Scanning project for AI agents...
+
+    Found 2 AI agents:
+
+    #1 order-processor
+       Framework: LangChain  │  Model: GPT-4 (OpenAI)
+       Autonomy: L3 (Supervised)  │  Risk: HIGH
+       Completeness: 68% (19/27 required fields)
+       → .complior/agents/order-processor-manifest.json ✓
+
+    #2 support-bot
+       Framework: Vercel AI  │  Model: Claude 3.5 (Anthropic)
+       Autonomy: L4 (Autonomous)  │  Risk: HIGH
+       Completeness: 71% (20/27 required fields)
+       → .complior/agents/support-bot-manifest.json ✓
+
+    Passports signed with ed25519 ✓
+    ```
+
+    {/* PLACEHOLDER: Screenshot of agent init output. 900×400px dark terminal */}
+  </Step>
+
+  <Step title="Auto-fix compliance issues">
+    Preview and apply remediation strategies.
+
+    ```bash
+    complior fix
+    ```
+
+    ```
+    15 fixes available:
+
+    #  Fix                              Category   Score
+    1  Add @complior/sdk wrapper         A: Code    +8
+    2  Add disclosure system message     A: Code    +4
+    3  Generate FRIA (Art.27)            B: Docs    +5
+    4  Generate AI Usage Policy          B: Docs    +3
+    5  Generate Worker Notification      B: Docs    +2
+    6  Add input validation              A: Code    +3
+    7  Add error handling                A: Code    +2
+    8  Harden .gitignore                 C: Config  +1
+    ...
+
+    Predicted score: 47 → 75 (+28)
+
+    Applied 15 fixes ✓
+    New Compliance Score: 75/100 (C)
+    ```
+
+    <Note>
+      Use `complior fix --dry-run` to preview without applying. Use `complior fix --ai` to have LLM fill in document placeholders.
+    </Note>
+  </Step>
+
+  <Step title="Open the dashboard">
+    Launch the TUI with 9 interactive pages.
+
+    ```bash
+    complior
+    ```
+
+    This starts the background daemon and opens the terminal dashboard. Navigate with hotkeys:
+
+    | Key | Page | What it shows |
+    |-----|------|---------------|
+    | `D` | Dashboard | Score, deadlines, AI systems, activity log |
+    | `S` | Scan | Findings by severity, per-obligation detail |
+    | `F` | Fix | Fixable items with diff preview |
+    | `P` | Passport | All AI systems, completeness %, obligations |
+    | `O` | Obligations | 108 EU AI Act obligations with status |
+    | `T` | Timeline | Visual countdown to Aug 2, 2026 |
+    | `R` | Report | Export: PDF, MD, JSON, SARIF |
+    | `L` | Log | Daemon events, system messages |
+    | `C` | Chat | LLM compliance assistant |
+
+    {/* PLACEHOLDER: Screenshot of TUI Dashboard page. 1200×700px dark terminal */}
+  </Step>
+</Steps>
+
+## What you now have
+
+After these 5 commands, your project contains:
+
+```
+project/
+├── .complior/
+│   ├── config.toml                        # Project configuration
+│   ├── profile.json                       # Domain, data types, risk level
+│   ├── agents/
+│   │   ├── order-processor-manifest.json  # Agent Passport #1 (ed25519 signed)
+│   │   └── support-bot-manifest.json      # Agent Passport #2 (ed25519 signed)
+│   ├── evidence/
+│   │   └── chain.json                     # Tamper-proof evidence chain
+│   ├── fria/
+│   │   └── fria-order-processor.md        # FRIA report (80% pre-filled)
+│   ├── docs/
+│   │   ├── ai-policy-hr.md               # AI Usage Policy
+│   │   └── worker-notification.md         # Worker Notification (Art.26(7))
+│   └── reports/
+│       └── scan-report.json              # Latest scan results
+```
+
+<Check>
+  Every file is cryptographically linked via the evidence chain. The entire `.complior/` directory is your audit-ready compliance package.
+</Check>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Deep dive: Scan" icon="magnifying-glass" href="/scan/overview">
+    Understand the 5 analysis layers and 6 scan tiers.
+  </Card>
+  <Card title="Deep dive: Eval" icon="flask-vial" href="/eval/overview">
+    Test your live AI system with 680 dynamic probes.
+  </Card>
+  <Card title="Agent Passport" icon="id-card" href="/passport/overview">
+    Explore the 36 fields, 3 generation modes, and 10-stage data pipeline.
+  </Card>
+  <Card title="Compliance Documents" icon="file-shield" href="/compliance-docs/overview">
+    See all 6 document types Complior generates for you.
+  </Card>
+</CardGroup>

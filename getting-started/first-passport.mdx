@@ -1,0 +1,138 @@
+---
+title: Your First Agent Passport
+description: "Generate a standardized AI system identity card — 36 fields, ed25519 signed, 85–95% auto-filled from code."
+---
+
+**Agent Passport** is a standardized identity card for each AI system in your project. Complior analyzes your code's AST and auto-fills 85–95% of the 36 fields — identity, permissions, constraints, risk class, and compliance status.
+
+<Info>
+  **Why it matters:** EU AI Act Art.26 requires every deployer to maintain a registry of AI systems. Art.27 requires FRIA for high-risk systems. Art.49 requires EU Database registration. The passport is your answer to the regulator.
+</Info>
+
+## Generate passports
+
+```bash
+complior agent init
+```
+
+Complior discovers AI agents through framework detection (57+ frameworks) and AST analysis:
+
+{/* PLACEHOLDER: Screenshot of `agent init` output showing 2 discovered agents. 900×400px */}
+
+## What gets auto-filled
+
+<AccordionGroup>
+  <Accordion title="Identity" icon="fingerprint">
+    `agent_id`, `name`, `display_name`, `description`, `version`, `created`, `updated`
+
+    Source: entry file name, framework config, auto-generated UUID.
+  </Accordion>
+  <Accordion title="Autonomy" icon="robot">
+    `type` (autonomous/assistive/hybrid), `autonomy_level` (L1–L5), `human_approval_gates`, `unsupervised_actions`, `killSwitchPresent`
+
+    Source: L4 AST pattern matching — counts human gates vs unsupervised actions.
+  </Accordion>
+  <Accordion title="Tech Stack" icon="microchip">
+    `framework`, `model.provider`, `model.model_id`, `model.deployment`, `model.data_residency`
+
+    Source: L3 dependency analysis + SDK detection + profile.json.
+  </Accordion>
+  <Accordion title="Permissions" icon="key">
+    `permissions.tools`, `permissions.data_access` (read/write/delete), `permissions.denied`, `permissions.data_boundaries`
+
+    Source: Permission scanner — analyzes tool definitions, DB patterns, explicit deny lists.
+  </Accordion>
+  <Accordion title="Compliance" icon="shield-check">
+    `risk_class`, `applicable_articles`, `deployer_obligations_met`, `deployer_obligations_pending`, `complior_score`
+
+    Source: Computed from autonomy level × project domain. Auto-updates after every scan.
+  </Accordion>
+  <Accordion title="Oversight (high-risk only)" icon="eye">
+    `responsible_person`, `override_mechanism`, `escalation_procedure`
+
+    Generated automatically for high-risk systems or autonomy L3+. Uses kill-switch detection from AST.
+  </Accordion>
+</AccordionGroup>
+
+## What needs manual input
+
+After `agent init`, ~8 fields remain empty. Fill them to reach 100% completeness:
+
+```bash
+complior agent completeness order-processor
+```
+
+```
+Missing fields (8):
+  owner.team                ← "Backend Engineering"
+  owner.contact             ← "eng-lead@company.com"
+  owner.responsible_person  ← "Maria Schmidt"
+  disclosure.user_facing    ← true
+  disclosure.disclosure_text← "This bot uses AI"
+  disclosure.ai_marking.responses_marked ← true
+  lifecycle.deployed_since  ← "2026-04-01"
+  lifecycle.status          ← "active"
+```
+
+<Tip>
+  Edit directly in JSON (`nano .complior/agents/order-processor-manifest.json`) or use the TUI Passport page (hotkey `P`).
+</Tip>
+
+## Passport validation
+
+```bash
+# Check schema + signature + completeness
+complior agent validate order-processor
+
+# For CI — exit code 1 on errors
+complior agent validate order-processor --ci
+
+# Verbose — see every field status
+complior agent validate order-processor --verbose
+```
+
+## Export formats
+
+Share your passport in industry-standard formats:
+
+<Tabs>
+  <Tab title="Google A2A">
+    ```bash
+    complior agent export order-processor --format a2a
+    ```
+    Google's Agent-to-Agent Card format for agent interoperability.
+  </Tab>
+  <Tab title="AIUC-1">
+    ```bash
+    complior agent export order-processor --format aiuc-1
+    ```
+    EU AI Use Case certification format (6 categories).
+  </Tab>
+  <Tab title="NIST AI RMF">
+    ```bash
+    complior agent export order-processor --format nist
+    ```
+    US NIST AI Risk Management Framework format.
+  </Tab>
+</Tabs>
+
+## Automatic updates
+
+The passport is a **living document**. After every `complior scan`, the passport auto-updates:
+
+- `compliance.complior_score` — refreshed to latest score
+- `compliance.last_scan` — updated timestamp
+- `signature` — re-signed with ed25519
+
+This happens via the `scan.completed` event in the background daemon. You don't need to do anything.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Your First Fix" icon="wrench" href="/getting-started/first-fix">
+    Auto-fix compliance issues and generate documents.
+  </Card>
+  <Card title="Passport Deep Dive" icon="id-card" href="/passport/overview">
+    3 modes, 10-stage data pipeline, all 36 fields.
+  </Card>
+</CardGroup>

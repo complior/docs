@@ -1,0 +1,149 @@
+---
+title: Your First Auto-Fix
+description: "Auto-remediate compliance issues with 18 strategies across code, docs, config, and dependencies."
+---
+
+`complior fix` analyzes findings from your scan and applies remediation strategies. Every fix: structured plan → score prediction → diff preview → backup → apply → validate → evidence chain.
+
+<Warning>
+  **Principle:** Fixer never invents compliance logic. All fixes are deterministic (templates + strategies). LLM only enriches document content with explicit `--ai` opt-in.
+</Warning>
+
+## Preview fixes
+
+Always preview before applying:
+
+```bash
+complior fix --dry-run
+```
+
+{/* PLACEHOLDER: Screenshot of fix preview table with 8 fixes and predicted score. 900×400px */}
+
+## Apply fixes
+
+```bash
+# Apply all available fixes
+complior fix
+
+# Apply with LLM document enrichment
+complior fix --ai
+```
+
+<Note>
+  `--ai` uses your BYOK LLM key to fill `[TO BE COMPLETED]` placeholders in generated documents. Without `--ai`, documents are scaffolded with placeholders but all compliance flags are already set.
+</Note>
+
+## 5 fix categories
+
+<Tabs>
+  <Tab title="A: Code (9 strategies)">
+    Modifies your source code to add compliance features:
+
+    | Strategy | What it does | Score impact |
+    |----------|-------------|-------------|
+    | A1 | Add `@complior/sdk` wrapper | +5–8 |
+    | A2 | Add disclosure system message (Art.50) | +3–5 |
+    | A3 | Add input validation | +2–3 |
+    | A4 | Add error handling | +1–2 |
+    | A5 | Add logging (Art.12) | +2–3 |
+    | A6 | Add permission guard | +2–3 |
+    | A7 | Add HITL gate (Art.14) | +3–5 |
+    | A8 | Config hardening | +1–2 |
+    | A9 | Fix unsafe deserialization | +1–2 |
+  </Tab>
+  <Tab title="B: Documents (6 strategies)">
+    Generates legally required compliance documents:
+
+    | Strategy | Document | Article | Pre-fill |
+    |----------|----------|---------|---------|
+    | B1 | FRIA (Fundamental Rights Impact Assessment) | Art.27 | 80% |
+    | B2 | AI Usage Policy | Art.6 | 60% |
+    | B3 | Risk Management Plan | Art.9 | 40% |
+    | B4 | Technical Documentation | Art.11 | 50% |
+    | B5 | Worker Notification | Art.26(7) | 70% |
+    | B6 | Transparency Note | Art.50 | 60% |
+
+    <Tip>
+      Documents are pre-filled from Agent Passport data. The more complete your passport, the fewer manual sections remain.
+    </Tip>
+  </Tab>
+  <Tab title="C: Config (3 strategies)">
+    Hardens project configuration:
+
+    - **C1:** Secret rotation recommendations
+    - **C2:** `.gitignore` hardening (AI keys, model files)
+    - **C3:** Docker security (non-root, read-only)
+  </Tab>
+  <Tab title="D: Dependencies (3 strategies)">
+    Fixes dependency-level issues:
+
+    - **D1:** CVE upgrade suggestions
+    - **D2:** License compatibility check
+    - **D3:** Model format validation (pickle → safetensors)
+  </Tab>
+  <Tab title="E: Passport (3 strategies)">
+    Updates passport fields based on scan results:
+
+    - **E1:** Risk level recalculation
+    - **E2:** Compliance field updates
+    - **E3:** Evidence chain entry
+  </Tab>
+</Tabs>
+
+## Diff preview in TUI
+
+Press `F` in TUI to open the Fix page. Select a fix to see the exact diff:
+
+{/* PLACEHOLDER: Screenshot of TUI Fix page with diff panel. Shows red/green code diff. 1200×700px */}
+
+| Key | Action |
+|-----|--------|
+| `Space` | Toggle fix selection |
+| `a` | Select all |
+| `n` | Deselect all |
+| `d` | Toggle diff preview |
+| `Enter` | Apply selected fixes |
+
+## Undo
+
+Every fix creates a backup. Undo at any time:
+
+```bash
+# Undo last fix
+complior fix --undo
+
+# Undo all fixes
+complior fix --undo --all
+```
+
+Backups are stored in `.complior/backups/` and fix history in `.complior/fixes-history.json`.
+
+## Document generation pipeline
+
+When fixes generate documents (B-strategies), the flow is:
+
+<Steps>
+  <Step title="Scaffold">
+    `complior fix` creates document from template with passport data pre-filled (25–80%).
+  </Step>
+  <Step title="Placeholders">
+    Remaining sections contain `[TO BE COMPLETED: ...]` markers.
+  </Step>
+  <Step title="LLM enrichment (optional)">
+    `complior fix --ai` sends 9 passport fields as context to LLM, which fills placeholders. LLM is wrapped through `@complior/sdk` proxy for safety.
+  </Step>
+  <Step title="Evidence">
+    Fix recorded in evidence chain with SHA-256 hash + ed25519 signature.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Compliance Documents" icon="file-shield" href="/compliance-docs/overview">
+    See all 6 document types and what they contain.
+  </Card>
+  <Card title="Eval: Test Live Systems" icon="flask-vial" href="/eval/overview">
+    Go beyond code scanning — test your AI system's actual behavior.
+  </Card>
+</CardGroup>

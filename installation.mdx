@@ -1,0 +1,102 @@
+---
+title: Installation
+description: "Install Complior CLI — npm, npx, or cargo."
+---
+
+## Install
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install -g complior
+    ```
+  </Tab>
+  <Tab title="npx (no install)">
+    ```bash
+    npx complior scan
+    ```
+  </Tab>
+  <Tab title="cargo (Rust binary)">
+    ```bash
+    cargo install complior-cli
+    ```
+  </Tab>
+</Tabs>
+
+<Info>
+  **Requirements:** Node.js 18+ for the Engine. Rust toolchain is optional (only needed for building TUI from source).
+</Info>
+
+## Verify installation
+
+```bash
+complior --version
+# complior 11.0.0
+
+complior doctor
+# ✓ Engine: OK
+# ✓ Node.js: v22.1.0
+# ✓ TUI: OK
+# ✓ MCP: OK
+```
+
+<Check>
+  All green checks mean Complior is ready. If any component shows an issue, `complior doctor` will suggest how to fix it.
+</Check>
+
+## What gets installed
+
+| Component | Description | Size |
+|-----------|-------------|------|
+| **Engine** | TypeScript daemon — scanner, fixer, passport service, HTTP API | ~15 MB |
+| **CLI** | Rust binary — 30+ commands, headless mode for CI/CD | ~10 MB |
+| **TUI** | Terminal dashboard — 9 interactive pages (ratatui) | Included in CLI |
+| **MCP Server** | Protocol server for AI agents (stdio) | Included in Engine |
+
+## Configure for AI agents
+
+To use Complior with Claude Code, Cursor, or other MCP-compatible agents:
+
+<Tabs>
+  <Tab title="Claude Code">
+    Add to `~/.claude/mcp.json`:
+    ```json
+    {
+      "mcpServers": {
+        "complior": {
+          "command": "complior",
+          "args": ["mcp"]
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    Add to Cursor MCP settings:
+    ```json
+    {
+      "complior": {
+        "command": "complior",
+        "args": ["mcp"]
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Windsurf">
+    Add to Windsurf MCP config:
+    ```json
+    {
+      "complior": {
+        "command": "complior",
+        "args": ["mcp"]
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Next steps
+
+<Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+  Run your first scan in under 3 minutes.
+</Card>

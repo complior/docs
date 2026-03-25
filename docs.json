@@ -1,68 +1,117 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "theme": "venus",
+  "name": "Complior",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#1A56DB",
+    "light": "#3B82F6",
+    "dark": "#1E293B"
   },
   "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/complior/complior"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "/getting-started/quickstart"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "installation",
+              "getting-started/quickstart",
+              "getting-started/first-scan",
+              "getting-started/first-passport",
+              "getting-started/first-fix"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Scan (Static Analysis)",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "scan/overview",
+              "scan/scan-tiers",
+              "scan/scoring",
+              "scan/ci-cd"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Eval (Dynamic Testing)",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "eval/overview",
+              "eval/eval-modes",
+              "eval/conformity-tests",
+              "eval/security-probes",
+              "eval/eval-vs-scan"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Fix (Auto-Remediation)",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
+              "fix/overview",
+              "fix/fix-strategies",
+              "fix/document-generation",
+              "fix/llm-enrichment"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Agent Passport",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "passport/overview",
+              "passport/passport-modes",
+              "passport/data-pipeline",
+              "passport/autonomy-levels",
+              "passport/risk-classification",
+              "passport/evidence-chain",
+              "passport/export-formats"
+            ]
+          },
+          {
+            "group": "Compliance Documents",
+            "pages": [
+              "compliance-docs/overview",
+              "compliance-docs/fria",
+              "compliance-docs/ai-policy",
+              "compliance-docs/audit-package"
+            ]
+          },
+          {
+            "group": "SDK (Runtime)",
+            "pages": [
+              "sdk/overview",
+              "sdk/quick-start",
+              "sdk/hooks",
+              "sdk/providers"
+            ]
+          },
+          {
+            "group": "MCP Server",
+            "pages": [
+              "mcp/overview",
+              "mcp/setup"
+            ]
+          },
+          {
+            "group": "Standards",
+            "pages": [
+              "standards/eu-ai-act",
+              "standards/iso-42001",
+              "standards/frameworks"
             ]
           }
         ]
@@ -71,52 +120,32 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "GitHub",
+          "href": "https://github.com/complior/complior",
+          "icon": "github"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Community",
+          "href": "https://discord.gg/complior",
+          "icon": "discord"
         }
       ]
     }
   },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "claude",
+      "cursor",
+      "vscode"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/complior",
+      "github": "https://github.com/complior",
+      "linkedin": "https://linkedin.com/company/complior"
     }
   }
 }
