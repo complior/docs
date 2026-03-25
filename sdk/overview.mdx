@@ -1,8 +1,90 @@
 ---
-title: "Overview"
-description: "Coming soon"
+title: "SDK Overview"
+sidebarTitle: "Overview"
+description: "@complior/sdk — runtime compliance wrapper for LLM clients. 14 hooks, 4 providers, zero config."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+`@complior/sdk` is an npm library that wraps LLM clients with a compliance pipeline. Every API call passes through: **pre-hooks → LLM call → post-hooks**. All checks are deterministic (regex + rules).
+
+```bash
+npm install @complior/sdk
+```
+
+{/* NAPKIN: Paste into napkin.ai —
+SDK Runtime Hook Pipeline
+
+User Request enters pipeline
+
+PRE-HOOKS (before LLM call):
+1. Logger — records request for audit
+2. Prohibited — blocks Art.5 violations (138 patterns, 8 categories, 6 languages)
+3. Sanitize — redacts PII (50+ types including IBAN, Steuernummer, BSN)
+4. Disclosure — injects "I am AI" system message
+5. Permission — checks tool allowlist/denylist from passport (Agent mode)
+6. Rate Limit — enforces sliding window from passport (Agent mode)
+
+If blocked → request rejected, LLM never called
+
+LLM API CALL (OpenAI / Anthropic / Google / Vercel AI)
+
+POST-HOOKS (after response):
+1. Disclosure Verify — confirms AI disclosure in response (4 languages)
+2. Content Marking — adds AI-generated metadata
+3. Escalation — detects human escalation needed
+4. Bias Check — screens 15 EU Charter protected characteristics
+5. Headers — adds compliance HTTP headers
+6. Budget — tracks cost against session limit (Agent mode)
+7. Action Log — audit callback (Agent mode)
+8. Circuit Breaker — cascade protection on error threshold
+
+Compliant response returned to user
+*/}
+
+## Quick start
+
+```typescript
+import { complior } from '@complior/sdk';
+import OpenAI from 'openai';
+
+const client = complior(new OpenAI(), {
+  hooks: ['prohibited', 'sanitize', 'disclosure', 'bias'],
+});
+
+// Use as normal — hooks work transparently
+const response = await client.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: userInput }],
+});
+```
+
+## Two modes
+
+| Mode | Function | Features |
+|------|----------|---------|
+| **Basic** | `complior(client, config)` | Core hooks: prohibited, sanitize, disclosure, bias, escalation |
+| **Agent** | `compliorAgent(client, { passport })` | All core hooks + passport enforcement: permissions, rate-limit, budget, action-log |
+
+## Agent mode (passport enforcement)
+
+```typescript
+import { compliorAgent } from '@complior/sdk';
+
+const passport = JSON.parse(
+  fs.readFileSync('.complior/agents/order-processor-manifest.json')
+);
+
+const agent = compliorAgent(new OpenAI(), { passport });
+// Passport constraints auto-enforced:
+// - permissions.tools → allowlist/denylist
+// - constraints.rate_limits → sliding window
+// - constraints.budget → cost cap per session
+```
+
+<CardGroup cols={2}>
+  <Card title="All Hooks" icon="list-check" href="/sdk/hooks">
+    6 pre-hooks + 8 post-hooks in detail.
+  </Card>
+  <Card title="Providers" icon="plug" href="/sdk/providers">
+    OpenAI, Anthropic, Google, Vercel AI.
+  </Card>
+</CardGroup>

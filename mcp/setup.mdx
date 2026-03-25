@@ -1,8 +1,69 @@
 ---
-title: "Setup"
-description: "Coming soon"
+title: "MCP Setup"
+sidebarTitle: "Setup"
+description: "Configure Complior as MCP server for Claude Code, Cursor, Windsurf, and other agents."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## Start the MCP server
+
+```bash
+complior mcp
+```
+
+This starts the MCP server in stdio mode. AI agents connect to it through their MCP configuration.
+
+## Agent configuration
+
+<Tabs>
+  <Tab title="Claude Code">
+    Add to `~/.claude/mcp.json`:
+    ```json
+    {
+      "mcpServers": {
+        "complior": {
+          "command": "complior",
+          "args": ["mcp"]
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Cursor">
+    Add to Cursor MCP settings:
+    ```json
+    {
+      "complior": {
+        "command": "complior",
+        "args": ["mcp"]
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Windsurf">
+    Add to Windsurf MCP config:
+    ```json
+    {
+      "complior": {
+        "command": "complior",
+        "args": ["mcp"]
+      }
+    }
+    ```
+  </Tab>
+  <Tab title="Other agents">
+    Any MCP-compatible agent can connect. The server uses stdio protocol:
+    ```bash
+    # Command: complior
+    # Args: ["mcp"]
+    # Protocol: stdio
+    ```
+  </Tab>
+</Tabs>
+
+## Verify connection
+
+After configuring, ask your agent: "What compliance tools do you have?" It should list the 8 Complior tools (scan, fix, score, explain, passport, validate, deadline, suggest).
+
+<Tip>
+  The MCP server uses the same Engine as CLI and TUI. If the daemon is already running, MCP connects to it. If not, it starts a lightweight engine instance.
+</Tip>

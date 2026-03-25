@@ -1,8 +1,100 @@
 ---
-title: "Overview"
-description: "Coming soon"
+title: "Agent Passport"
+sidebarTitle: "Overview"
+description: "Standardized AI system identity card — 36 fields, ed25519 signed, 3 generation modes."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Agent Passport is the central artifact of Complior — a standardized identity card for each AI system (`agent-manifest.json`). It contains 36 fields covering identity, permissions, constraints, compliance status, and human oversight. Ed25519 signed at every update.
+
+<Info>
+  **Why it exists:** EU AI Act requires deployers to maintain an AI system registry (Art.26), conduct FRIA for high-risk systems (Art.27), and register in the EU Database (Art.49). When the regulator asks "Show me your AI systems" — the passport is the answer.
+</Info>
+
+{/* NAPKIN: Paste into napkin.ai —
+Agent Passport: One Format, Three Sources
+
+Mode 1: AUTO (from code) — AST analysis → 85-95% auto-fill → CLI FREE → Developer
+Mode 2: RUNTIME (from observation) — MCP Proxy + Eval → 40-70% → CLI+SaaS → DevOps
+Mode 3: MANUAL (from form) — SaaS wizard + AI Registry pre-fill → 100% manual → SaaS PAID → DPO/CTO
+
+All three produce: agent-manifest.json (36 fields, ed25519 signed)
+*/}
+
+## Key commands
+
+```bash
+complior agent init                           # Generate passports from code (Mode 1)
+complior agent list                           # List all passports
+complior agent show order-processor           # Show specific passport
+complior agent validate order-processor       # Check completeness + signature
+complior agent completeness order-processor   # See missing fields
+complior agent fria order-processor           # Generate FRIA (Art.27)
+complior agent export order-processor --format a2a  # Export to A2A format
+```
+
+## What the passport contains
+
+<AccordionGroup>
+  <Accordion title="Identity" icon="fingerprint">
+    `agent_id`, `name`, `display_name`, `description`, `version`, `created`, `updated`
+  </Accordion>
+  <Accordion title="Ownership (Art.26)" icon="user">
+    `owner.team`, `owner.contact`, `owner.responsible_person`
+  </Accordion>
+  <Accordion title="Autonomy (Art.14)" icon="robot">
+    `type`, `autonomy_level` (L1–L5), `autonomy_evidence` (gates, unsupervised actions), `killSwitchPresent`
+  </Accordion>
+  <Accordion title="Tech Stack (Art.13)" icon="microchip">
+    `framework`, `model.provider`, `model.model_id`, `model.deployment`, `model.data_residency`
+  </Accordion>
+  <Accordion title="Permissions (Art.26(4))" icon="key">
+    `permissions.tools`, `permissions.data_access` (read/write/delete), `permissions.denied`, `permissions.data_boundaries`
+  </Accordion>
+  <Accordion title="Constraints (Art.14, Art.5)" icon="lock">
+    `constraints.rate_limits`, `constraints.budget`, `constraints.human_approval_required`, `constraints.prohibited_actions`, `constraints.escalation_rules`
+  </Accordion>
+  <Accordion title="Compliance (Art.9, Art.26)" icon="shield-check">
+    `risk_class`, `applicable_articles`, `deployer_obligations_met/pending`, `complior_score`, `last_scan`, `fria_completed`, `eval` block
+  </Accordion>
+  <Accordion title="Oversight (Art.14, high-risk only)" icon="eye">
+    `oversight.responsible_person`, `oversight.override_mechanism`, `oversight.escalation_procedure`
+  </Accordion>
+  <Accordion title="Disclosure (Art.50)" icon="comment">
+    `disclosure.user_facing`, `disclosure.disclosure_text`, `disclosure.ai_marking`
+  </Accordion>
+  <Accordion title="Logging (Art.12)" icon="file-lines">
+    `logging.actions_logged`, `logging.retention_days`, `logging.includes_decision_rationale`
+  </Accordion>
+  <Accordion title="Lifecycle" icon="arrows-rotate">
+    `lifecycle.status` (draft/review/active/suspended/retired), `lifecycle.deployed_since`, `lifecycle.next_review`, `lifecycle.review_frequency_days`
+  </Accordion>
+  <Accordion title="Signature" icon="stamp">
+    `signature.algorithm` (ed25519), `signature.public_key`, `signature.signed_at`, `signature.hash`, `signature.value`
+  </Accordion>
+</AccordionGroup>
+
+## Storage
+
+```
+.complior/agents/
+├── order-processor-manifest.json    # Passport #1
+├── support-bot-manifest.json        # Passport #2
+└── ...
+```
+
+Keys stored in `~/.config/complior/keys/`. Passports re-signed on every update.
+
+<CardGroup cols={2}>
+  <Card title="3 Generation Modes" icon="wand-magic-sparkles" href="/passport/passport-modes">
+    Auto (code), Runtime (observation), Manual (SaaS).
+  </Card>
+  <Card title="Data Pipeline" icon="timeline" href="/passport/data-pipeline">
+    10 stages from 0% to 100%+ completeness.
+  </Card>
+  <Card title="Autonomy Levels" icon="gauge" href="/passport/autonomy-levels">
+    L1–L5 scale with automatic AST detection.
+  </Card>
+  <Card title="Risk Classification" icon="triangle-exclamation" href="/passport/risk-classification">
+    Dual-source: autonomy × domain.
+  </Card>
+</CardGroup>

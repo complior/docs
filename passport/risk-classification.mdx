@@ -1,8 +1,48 @@
 ---
 title: "Risk Classification"
-description: "Coming soon"
+sidebarTitle: "Risk Classification"
+description: "Dual-source risk classification: autonomy level × project domain."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## How risk is determined
+
+Risk class comes from **two sources** — the highest wins:
+
+### Source 1: Autonomy level
+
+| Level | Inferred risk |
+|-------|--------------|
+| L1, L2 | `minimal` |
+| L3, L4 | `limited` |
+| L5 | `high` |
+
+### Source 2: Project profile
+
+From `.complior/profile.json` (created during `complior init`):
+
+| Domain | Inferred risk |
+|--------|--------------|
+| `healthcare`, `finance`, `hr`, `education`, `law_enforcement`, `justice` | `high` |
+| Biometric/medical/financial data | `high` |
+| Platform system | `limited` |
+| Internal with public data | `minimal` |
+
+## Resolution: highest wins
+
+**Example:** HR recruitment agent + L3 autonomy.
+- Autonomy: L3 → `limited`
+- Profile: hr → `high`
+- **Result: `high`** (highest of the two)
+
+Without profile (`.complior/profile.json` not found): only autonomy is used.
+
+## Dynamic applicable articles
+
+Based on risk class, `getApplicableArticles()` returns:
+
+| Risk Class | Applicable Articles |
+|------------|-------------------|
+| `prohibited` | Art.5 |
+| `high` | Art.6, 9, 11, 12, 13, 14, 26, 27, 49, 50 |
+| `limited` | Art.50, 52 |
+| `minimal` | Art.50 |

@@ -1,8 +1,66 @@
 ---
-title: "$(basename $f | sed 's/-/ /g' | sed 's/\b\w/\U&/g')"
-description: "Coming soon"
+title: "CI/CD Integration"
+sidebarTitle: "CI/CD"
+description: "Add compliance gates to your CI/CD pipeline with threshold checks and structured output."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## Quick setup
+
+```bash
+complior scan --ci --json --threshold 70
+```
+
+- `--ci` — exit code 1 if score below threshold, exit code 0 if above
+- `--json` — structured JSON output (also supports `--sarif` for GitHub Code Scanning)
+- `--threshold 70` — minimum compliance score to pass
+
+## GitHub Actions
+
+```yaml
+name: Compliance Check
+on: [push, pull_request]
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install -g complior
+      - run: complior scan --ci --json --threshold 70
+      - run: complior agent validate --ci
+```
+
+## GitLab CI
+
+```yaml
+compliance:
+  image: node:22
+  script:
+    - npm install -g complior
+    - complior scan --ci --json --threshold 70
+    - complior agent validate --ci
+  artifacts:
+    reports:
+      codequality: .complior/reports/scan-report.json
+```
+
+## Output formats
+
+| Format | Flag | Use case |
+|--------|------|---------|
+| JSON | `--json` | Custom integrations, dashboards |
+| SARIF | `--sarif` | GitHub Code Scanning, VS Code |
+| Markdown | `--md` | PR comments, reports |
+
+## Passport validation in CI
+
+```bash
+# Fail CI if any passport has errors
+complior agent validate --ci
+
+# Strict mode: warnings also fail
+complior agent validate --ci --strict
+```

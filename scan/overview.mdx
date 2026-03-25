@@ -1,8 +1,93 @@
 ---
-title: "$(basename $f | sed 's/-/ /g' | sed 's/\b\w/\U&/g')"
-description: "Coming soon"
+title: "Scan Overview"
+sidebarTitle: "Overview"
+description: "5-layer deterministic static analysis engine. Scans your codebase for EU AI Act compliance gaps in 2–5 seconds."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+`complior scan` is a deterministic, 5-layer compliance analysis engine. It evaluates your project against the EU AI Act and produces actionable findings with confidence scoring, obligation mapping, and fix suggestions.
+
+```bash
+complior scan [path] [--deep] [--llm] [--cloud] [--ci] [--json]
+```
+
+<Warning>
+  **Design principle:** LLM **never** makes compliance determinations. Layers L1–L4 are fully deterministic (AST + rules). Layer L5 (LLM) is opt-in and only clarifies findings in the uncertain zone (50–80% confidence).
+</Warning>
+
+{/* NAPKIN: Paste into napkin.ai —
+Complior Scan: 5-Layer Analysis Pipeline
+
+Layer 1: File Presence (weight 1.00) — checks for README, LICENSE, .env, privacy policy. 14 checks.
+Layer 2: Document Structure (weight 0.95) — validates required sections, FRIA presence. 8 checks.
+Layer 3: Dependencies & Config (weight 0.90) — AI packages (45 frameworks), lockfile, licenses, CVEs. 12 checks.
+Layer 4: Code Patterns (weight 0.75) — 40+ AST patterns, SDK wrapper, disclosure, logging, secrets (37 patterns).
+Layer 5: LLM Deep Analysis (opt-in) — targeted analysis for uncertain findings. BYOK key required.
+Cross-Layer Verification — 7 consistency rules.
+Output: Compliance Score 0-100 + Security Score 0-100 across 6 frameworks.
+*/}
+
+## What gets scanned
+
+| Capability | Details |
+|-----------|---------|
+| **AI Frameworks** | 57+ detected: LangChain, CrewAI, OpenAI, Anthropic, Vercel AI, HuggingFace, LlamaIndex |
+| **Languages** | TypeScript/JavaScript, Python, Go, Rust, Java |
+| **Secrets** | 37 patterns: API keys, tokens, passwords (Rust-native detection) |
+| **Git History** | 21 compliance-relevant documents traced through commit history |
+| **Import Graph** | 45 AI packages + transitive dependencies mapped |
+| **File Limit** | 500 files max, 1 MB each |
+
+## Output structure
+
+```json
+{
+  "score": { "compliance": 74, "security": 85 },
+  "frameworks": {
+    "eu-ai-act": { "score": 74, "grade": "C" },
+    "owasp-llm": { "score": 85, "grade": "B" },
+    "mitre-atlas": { "score": 82, "grade": "B" }
+  },
+  "findings": [
+    {
+      "id": "no-disclosure",
+      "severity": "critical",
+      "layer": "L4",
+      "obligation": "OBL-050",
+      "article": "Art.50",
+      "message": "No AI disclosure found in agent code",
+      "file": "src/agents/order-agent.ts",
+      "line": 42,
+      "fixable": true,
+      "strategy": "A2"
+    }
+  ]
+}
+```
+
+## Finding severities
+
+| Severity | Meaning | Example |
+|----------|---------|---------|
+| **Critical** | Blocks deployment. Art.5 violation. | No SDK wrapper, prohibited practice |
+| **High** | Major gap. Required for your risk class. | Missing FRIA, no disclosure |
+| **Medium** | Recommended. Affects score significantly. | Weak logging, incomplete error handling |
+| **Low** | Best practice. Minor score impact. | Missing .gitignore, outdated dependency |
+
+## Explain any finding
+
+```bash
+complior explain OBL-050
+```
+
+## Automatic passport update
+
+After every scan, all Agent Passports auto-update `complior_score`, `last_scan`, and re-sign with ed25519.
+
+<CardGroup cols={2}>
+  <Card title="Scan Tiers" icon="layer-group" href="/scan/scan-tiers">
+    6 tiers from offline to cloud-enriched.
+  </Card>
+  <Card title="Scoring" icon="gauge-high" href="/scan/scoring">
+    Dual scoring across compliance frameworks.
+  </Card>
+</CardGroup>

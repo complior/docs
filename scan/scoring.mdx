@@ -1,8 +1,53 @@
 ---
-title: "$(basename $f | sed 's/-/ /g' | sed 's/\b\w/\U&/g')"
-description: "Coming soon"
+title: "Scoring"
+sidebarTitle: "Scoring"
+description: "Dual scoring system — compliance + security — across multiple international frameworks."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Every scan produces **two** independent scores, each computed across multiple frameworks.
+
+## Dual scores
+
+| Score | Source | Frameworks | Scale |
+|-------|--------|-----------|-------|
+| **Compliance Score** | Code analysis against regulations | EU AI Act, AIUC-1, ISO 42001 | 0–100 (A–F) |
+| **Security Score** | Attack surface analysis | OWASP LLM Top 10, MITRE ATLAS | 0–100 (A–F) |
+
+## Grade scale
+
+| Grade | Score Range | Meaning |
+|-------|-----------|---------|
+| **A** | 90–100 | Excellent — audit-ready |
+| **B** | 80–89 | Good — minor improvements needed |
+| **C** | 70–79 | Acceptable — significant gaps remain |
+| **D** | 60–69 | Poor — major compliance work needed |
+| **F** | 0–59 | Failing — critical issues |
+
+## Critical caps
+
+<Warning>
+  Certain categories cap the maximum achievable score:
+  - **Prohibited practices = 0** → max overall score: **29**
+  - **Transparency = 0** → max overall score: **49**
+  - **No passport** → max overall score: **69**
+</Warning>
+
+## Multi-framework scoring
+
+Configure which frameworks to score against in `.complior/config.toml`:
+
+```toml
+frameworks = ["eu-ai-act", "aiuc-1", "owasp-llm", "mitre-atlas"]
+```
+
+Each framework has its own scorer with independent weights and rules. The default is `["eu-ai-act"]`.
+
+## Score composition
+
+Scores are computed in 3 layers:
+
+| Layer | What | Example |
+|-------|------|---------|
+| **Foundation metrics** | Scan results, passport presence, evidence, docs, adversarial tests | passport-presence: +5, no-disclosure: -8 |
+| **Per-framework scores** | Weighted by framework-specific rules | EU AI Act weights Art.5 highest |
+| **Economic indicators** | Compliance debt, estimated cost, deadline risk | 45 days to deadline, €12K estimated cost |

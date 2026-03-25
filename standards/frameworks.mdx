@@ -1,8 +1,56 @@
 ---
-title: "Frameworks"
-description: "Coming soon"
+title: "Other Frameworks"
+sidebarTitle: "Frameworks"
+description: "OWASP LLM Top 10, MITRE ATLAS, NIST AI RMF — security and risk frameworks."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Beyond EU AI Act and ISO 42001, Complior scores against security and risk frameworks.
+
+## OWASP LLM Top 10
+
+Embedded in the security scoring pipeline. 300 attack probes map to OWASP categories:
+
+| Category | What Complior checks |
+|----------|---------------------|
+| LLM01: Prompt Injection | 50 injection probes in eval |
+| LLM02: Insecure Output | Content safety post-hooks in SDK |
+| LLM06: Sensitive Info Disclosure | PII detection in scan + SDK sanitize |
+| LLM07: Insecure Plugin Design | Permission scanner in passport |
+| LLM09: Overreliance | Hallucination tests in eval CT-5 |
+
+## MITRE ATLAS
+
+Adversarial threat taxonomy for AI systems. Integrated into red team probes:
+
+```bash
+complior redteam --target <url>
+# Maps findings to MITRE ATLAS techniques
+```
+
+## NIST AI RMF
+
+Voluntary US framework. 4 functions, 19 categories. Coverage: ~35–40%.
+
+| Function | Coverage | Complior features |
+|----------|---------|-------------------|
+| **GOVERN** | ~25% | AI Policy generation, passport governance fields |
+| **MAP** | ~30% | Agent discovery, risk classification, passport context |
+| **MEASURE** | ~55% | Scanner metrics, eval scores, evidence chain |
+| **MANAGE** | ~35% | Fix strategies, monitoring, audit package |
+
+Export any passport to NIST format:
+
+```bash
+complior agent export order-processor --format nist
+```
+
+## Multi-framework scoring
+
+Configure which frameworks to score against:
+
+```toml
+# .complior/config.toml
+frameworks = ["eu-ai-act", "aiuc-1", "owasp-llm", "mitre-atlas"]
+```
+
+Each framework has independent weights and scoring rules. Default: `["eu-ai-act"]`.

@@ -1,8 +1,68 @@
 ---
 title: "Data Pipeline"
-description: "Coming soon"
+sidebarTitle: "Data Pipeline"
+description: "10 stages from 0% to 100%+ passport completeness."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+{/* NAPKIN: Paste into napkin.ai —
+Passport Data Fill Pipeline: From 0% to 100%
+
+Stage 0: Onboarding (complior init) — Creates profile.json — 0% passport — Done
+Stage 1: Agent Init (complior agent init) — 44 fields auto-filled from AST — 65-70% — Done
+Stage 2: Scan (complior scan) — Adds score + last_scan — 70% — Done
+Stage 3: Manual Fill (TUI/JSON edit) — Adds owner, disclosure, lifecycle — 93% — Done
+Stage 4: Documents (complior fix) — Sets fria_completed, policy_generated — 100% — Done
+Stage 5: Live Update (daemon watcher) — Score refreshes on every file save — 100% maintained — Done
+Stage 6: Eval (complior eval) — Adds 20+ behavioral fields — 100%+ — Planned
+Stage 7: MCP Proxy — Runtime enrichment for black-box agents — Planned
+Stage 8: Monitor (complior monitor) — Drift detection, anomalies — Planned
+Stage 9: SaaS Dashboard — All 78 fields via wizard — Planned
+*/}
+
+## Stage overview
+
+| Stage | Command | Fields added | Completeness | Status |
+|-------|---------|-------------|-------------|--------|
+| 0. Onboarding | `complior init` | profile.json (not passport) | 0% | Done |
+| 1. Agent Init | `complior agent init` | ~44 auto-filled from AST | 65–70% | Done |
+| 2. Scan | `complior scan` | +2 (score, last_scan) | 70% | Done |
+| 3. Manual Fill | TUI / JSON edit | +6 (owner, disclosure) | 93% | Done |
+| 4. Documents | `agent fria/notify/policy` | +3 flags | 100% | Done |
+| 5. Live Update | Daemon watcher | Score refresh | 100% | Done |
+| 6. Eval | `complior eval --target` | +20 behavioral fields | 100%+ | Planned |
+| 7. MCP Proxy | `complior proxy` | Runtime enrichment | varies | Planned |
+| 8. Monitor | `complior monitor` | +4 drift fields | varies | Planned |
+| 9. SaaS | `app.complior.dev` | All 78 fields | 100% | Planned |
+
+## Stage 1: What gets auto-filled
+
+After `complior agent init`, these fields are populated from AST analysis:
+
+- **Identity:** agent_id, name, display_name, description, version, timestamps
+- **Autonomy:** type, level L1–L5, human_approval_gates count, unsupervised_actions count, killSwitchPresent
+- **Tech Stack:** framework, model provider/id/deployment, data_residency
+- **Permissions:** tools list, data_access (read/write/delete), denied actions
+- **Compliance:** risk_class, applicable_articles, obligations met/pending
+- **Logging:** actions_logged, retention_days
+- **Lifecycle:** status ("draft"), next_review (created + 90 days)
+- **Oversight:** (for high-risk/L3+ only) responsible_person, override_mechanism, escalation
+- **Signature:** ed25519 auto-sign
+
+## Stage 3: What needs manual input
+
+```bash
+complior agent completeness order-processor
+```
+
+Typically 8 fields remain after auto-fill:
+
+| Field | Example value | Why manual |
+|-------|--------------|-----------|
+| `owner.team` | "Backend Engineering" | Organization-specific |
+| `owner.contact` | "eng-lead@company.com" | Person-specific |
+| `owner.responsible_person` | "Maria Schmidt" | Person-specific |
+| `disclosure.user_facing` | true | Business decision |
+| `disclosure.disclosure_text` | "This bot uses AI" | Custom text |
+| `disclosure.ai_marking.responses_marked` | true | Implementation choice |
+| `lifecycle.deployed_since` | "2026-04-01" | Deploy date |
+| `lifecycle.status` | "active" | Lifecycle state |

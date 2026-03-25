@@ -1,8 +1,95 @@
 ---
-title: "$(basename $f | sed 's/-/ /g' | sed 's/\b\w/\U&/g')"
-description: "Coming soon"
+title: "Scan Tiers"
+sidebarTitle: "Scan Tiers"
+description: "6 composable scan tiers — from zero-dependency offline to full cloud enrichment."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Scan tiers are composable flags. Each tier adds capability while keeping everything below it.
+
+{/* NAPKIN: Paste into napkin.ai —
+Complior Scan: 6 Tiers of Analysis Depth
+
+Each tier builds on top of the previous one. Flags are composable.
+
+Tier 1: Offline Scan — complior scan — Coverage 60-70% — 0 dependencies — 2-5 seconds — Our code L1-L4 + Rust-native secrets
+Tier 1+: Offline + LLM — complior scan --llm — Coverage 70-80% — BYOK API key — +5-15 seconds — Adds L5 deep analysis
+Tier 2: Deep Local — complior scan --deep — Coverage 80-85% — Auto-download 150MB — 10-30 seconds — Adds Semgrep + Bandit + ModelScan
+Tier 2+: Deep + LLM — complior scan --deep --llm — Coverage 85-90% — Full offline analysis
+Tier 3: Cloud Enrichment — complior scan --cloud — Coverage 90-95% — Cloud account — AI SBOM + Presidio PII + vendor check
+Tier 3+: Full Cloud — complior scan --deep --llm --cloud — Coverage 95%+ — Maximum depth
+*/}
+
+<Tabs>
+  <Tab title="Tier 1: Offline">
+    ```bash
+    complior scan
+    ```
+    | | |
+    |---|---|
+    | **Coverage** | 60–70% |
+    | **Time** | 2–5 seconds |
+    | **Dependencies** | None (zero install) |
+    | **What runs** | L1–L4 checks + Rust-native secret detection (37 patterns) |
+
+    Works completely offline. No internet, no accounts, no API keys.
+  </Tab>
+  <Tab title="Tier 1+: LLM">
+    ```bash
+    complior scan --llm
+    ```
+    | | |
+    |---|---|
+    | **Coverage** | 70–80% |
+    | **Time** | +5–15 seconds |
+    | **Dependencies** | BYOK API key (OpenAI, Anthropic, OpenRouter, Ollama) |
+    | **What adds** | L5 targeted LLM analysis for uncertain findings (50–80% confidence) + document quality validation |
+  </Tab>
+  <Tab title="Tier 2: Deep">
+    ```bash
+    complior scan --deep
+    ```
+    | | |
+    |---|---|
+    | **Coverage** | 80–85% |
+    | **Time** | 10–30 seconds |
+    | **Dependencies** | Auto-download ~150 MB (one-time, cached in `~/.complior/tools/`) |
+    | **What adds** | Semgrep (multi-lang AST rules), Bandit (Python security), ModelScan (model backdoor detection) |
+  </Tab>
+  <Tab title="Tier 3: Cloud">
+    ```bash
+    complior scan --cloud
+    ```
+    | | |
+    |---|---|
+    | **Coverage** | 90–95% |
+    | **Dependencies** | Cloud account (free: 5 scans/month) |
+    | **What adds** | AI SBOM + CycloneDX, Presidio PII detection (50+ EU types), vendor Art.25 assessment, PDF/DOCX export |
+
+    <Note>
+      Cloud scan sends findings + deps + code snippets to `scan.complior.dev`. **Not** full source code. EU data residency (Hetzner, Germany).
+    </Note>
+  </Tab>
+  <Tab title="Tier 3+: Full">
+    ```bash
+    complior scan --deep --llm --cloud
+    ```
+    | | |
+    |---|---|
+    | **Coverage** | 95%+ |
+    | **What runs** | Everything: L1–L5 + Semgrep/Bandit/ModelScan + SBOM/PII/vendor + hosted LLM |
+
+    Maximum analysis depth. All flags combined.
+  </Tab>
+</Tabs>
+
+## Deep scan tools
+
+Tools auto-downloaded on first `--deep` run:
+
+| Tool | License | What it does |
+|------|---------|-------------|
+| **Semgrep** | LGPL-2.1 | Multi-language AST rules (20–30 YAML rules) |
+| **Bandit** | Apache 2.0 | Python security analysis (pickle, eval, exec) |
+| **ModelScan** | Apache 2.0 | Model file backdoor detection (.pt/.pkl/.safetensors) |
+
+All cached in `~/.complior/tools/`. No manual setup needed.

@@ -1,8 +1,49 @@
 ---
 title: "Evidence Chain"
-description: "Coming soon"
+sidebarTitle: "Evidence Chain"
+description: "Tamper-proof cryptographic chain: SHA-256 hash → ed25519 signature → chain."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Every compliance action in Complior produces a cryptographic evidence entry. The chain is stored in `.complior/evidence/chain.json`.
+
+## How it works
+
+<Steps>
+  <Step title="Action occurs">
+    Scan completes, fix applied, passport updated, document generated.
+  </Step>
+  <Step title="Hash computed">
+    SHA-256 hash of the artifact (scan result, fix diff, passport JSON, document).
+  </Step>
+  <Step title="Signature created">
+    Ed25519 signs the hash with the project's private key (`~/.config/complior/keys/`).
+  </Step>
+  <Step title="Chain entry added">
+    Entry includes: event type, timestamp, hash, signature, and reference to previous entry.
+  </Step>
+</Steps>
+
+## Recorded events
+
+| Event | Trigger | What's hashed |
+|-------|---------|--------------|
+| `scan.completed` | Every `complior scan` | Full scan result |
+| `fix.applied` | Every `complior fix` | Fix diff + before/after |
+| `passport.created` | `complior agent init` | Full passport JSON |
+| `passport.updated` | Score update, manual edit | Updated passport JSON |
+| `fria.generated` | `complior agent fria` | FRIA document |
+| `document.generated` | `complior fix` (B-strategy) | Document content |
+
+## Verification
+
+```bash
+# View evidence chain summary
+complior agent evidence
+
+# Verify chain integrity (all hashes + signatures)
+complior agent evidence --verify
+```
+
+## For auditors
+
+The evidence chain proves: what was checked, when, what was found, what was fixed, and in what order. Each entry is independently verifiable without trusting Complior itself — the auditor can re-hash any artifact and verify the ed25519 signature.

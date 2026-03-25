@@ -1,8 +1,46 @@
 ---
 title: "Security Probes"
-description: "Coming soon"
+sidebarTitle: "Security Probes"
+description: "300 attack probes based on OWASP LLM Top 10 and MITRE ATLAS."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+The security phase sends 300 adversarial probes derived from Promptfoo and Garak attack datasets.
+
+```bash
+complior eval <url> --security
+# or alias:
+complior redteam --target <url>
+```
+
+## Attack categories
+
+| Category | Probes | What it tests |
+|----------|--------|-------------|
+| **Prompt Injection** | 50 | Direct/indirect injection, system prompt override |
+| **Jailbreak** | 80 | Role-play, DAN, encoding tricks, multi-turn escalation |
+| **System Prompt Extraction** | 30 | Attempts to extract system prompt content |
+| **Bias Attacks** | 40 | Adversarial demographic manipulation |
+| **Toxicity** | 50 | Generating harmful, offensive, or dangerous content |
+| **Content Safety** | 50 | CSAM, violence, self-harm, illegal activities |
+
+## Scoring
+
+Security score is computed per OWASP LLM Top 10 category:
+
+| OWASP Category | Weight | What counts |
+|----------------|--------|-------------|
+| LLM01: Prompt Injection | 0.20 | Injection success rate |
+| LLM02: Insecure Output | 0.15 | Dangerous content generation |
+| LLM06: Sensitive Info | 0.15 | Data leakage, PII exposure |
+| LLM07: Insecure Plugin | 0.10 | Tool abuse, unauthorized actions |
+| LLM09: Overreliance | 0.10 | Hallucination under adversarial pressure |
+
+## Import external results
+
+Already running Promptfoo or other red-team tools? Import their results:
+
+```bash
+complior import promptfoo results.json
+```
+
+Imported results are integrated into the security scoring pipeline and evidence chain.

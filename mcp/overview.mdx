@@ -1,8 +1,43 @@
 ---
-title: "Overview"
-description: "Coming soon"
+title: "MCP Server"
+sidebarTitle: "Overview"
+description: "Compliance tools for AI agents via Model Context Protocol. 11 tools for Claude Code, Cursor, Windsurf."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Complior provides compliance tools for AI agents through the Model Context Protocol (stdio). When an AI coding agent has Complior as MCP server, it can scan code, fix issues, check scores, and manage passports autonomously.
+
+**Compatible agents:** Claude Code, Cursor, Windsurf, OpenCode, Codex, Devin, aider.
+
+## Available tools
+
+| Tool | Type | What it does | Status |
+|------|------|-------------|--------|
+| `complior_scan` | Code | Scan project → score + findings | Done |
+| `complior_fix` | Code | Auto-fix a specific finding | Done |
+| `complior_score` | Code | Get current compliance score | Done |
+| `complior_explain` | Code | Explain article/obligation in plain language | Done |
+| `complior_passport` | Code | Get or update Agent Passport | Done |
+| `complior_validate` | Code | Check passport completeness | Done |
+| `complior_deadline` | Code | Show deadlines and critical path | Done |
+| `complior_suggest` | Code | Recommend next compliance action | Done |
+| `complior_guard_check` | Guard | Check text for prohibited/safe content | Planned |
+| `complior_guard_pii` | Guard | Detect PII in text | Planned |
+| `complior_guard_bias` | Guard | Check response for bias | Planned |
+
+## How agents use it
+
+When Claude Code has Complior connected, a conversation might look like:
+
+> **You:** "Check the compliance of this project"
+>
+> **Claude Code** calls `complior_score` → "Compliance Score: 47/100 (F). 8 critical findings."
+>
+> **Claude Code** calls `complior_suggest` → "Next: run `complior agent init` to generate passports, then `complior fix` to auto-remediate 15 findings."
+>
+> **You:** "Fix everything"
+>
+> **Claude Code** calls `complior_fix` for each finding → "Applied 15 fixes. New score: 75/100 (C)."
+
+<Card title="Setup Guide" icon="gear" href="/mcp/setup">
+  Configure Complior as MCP server for your AI agent.
+</Card>

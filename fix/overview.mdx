@@ -1,8 +1,70 @@
 ---
-title: "Overview"
-description: "Coming soon"
+title: "Fix Overview"
+sidebarTitle: "Overview"
+description: "Deterministic auto-remediation engine — 18 strategies across code, docs, config, deps, and passport."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+`complior fix` analyzes findings from your scan and applies remediation strategies. Every fix follows: structured plan → score prediction → diff preview → backup → apply → validate → evidence chain.
+
+```bash
+complior fix [--dry-run] [--ai] [--all] [--json]
+```
+
+<Warning>
+  **Principle:** Fixer never invents compliance logic. All fixes are deterministic (templates + strategies). LLM only enriches document content with explicit `--ai` opt-in.
+</Warning>
+
+## How it works
+
+<Steps>
+  <Step title="Discovery">
+    Reads last `ScanResult`. Filters for `type == 'fail'` findings.
+  </Step>
+  <Step title="Planning">
+    For each finding: finds matching strategy → builds FixPlan with actions (create/edit/splice).
+  </Step>
+  <Step title="Preview">
+    Shows table with predicted score impact. Use `--dry-run` to stop here.
+  </Step>
+  <Step title="Apply">
+    Backups original files → applies actions → resolves templates with passport data → re-scans project.
+  </Step>
+  <Step title="Validate">
+    Checks: did the finding change from fail → pass? Records score delta.
+  </Step>
+  <Step title="Evidence">
+    Records fix in evidence chain (`.complior/evidence/`) + undo history (`.complior/fixes-history.json`).
+  </Step>
+</Steps>
+
+## Commands
+
+```bash
+complior fix                  # Preview + apply all fixes
+complior fix --dry-run        # Preview only, don't apply
+complior fix --ai             # Apply + LLM enrichment for documents
+complior fix --json           # JSON output for CI/CD
+complior fix --undo           # Undo last fix
+complior fix --undo --all     # Undo all fixes
+```
+
+## TUI Fix page
+
+Press `F` in TUI to open the Fix page:
+
+| Key | Action |
+|-----|--------|
+| `Space` | Toggle fix selection |
+| `a` | Select all |
+| `n` | Deselect all |
+| `d` | Toggle diff preview |
+| `Enter` | Apply selected fixes |
+
+<CardGroup cols={2}>
+  <Card title="Fix Strategies" icon="screwdriver-wrench" href="/fix/fix-strategies">
+    All 18 strategies across 5 categories.
+  </Card>
+  <Card title="Document Generation" icon="file-lines" href="/fix/document-generation">
+    How fixes generate compliance documents.
+  </Card>
+</CardGroup>

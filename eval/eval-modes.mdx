@@ -1,8 +1,53 @@
 ---
 title: "Eval Modes"
-description: "Coming soon"
+sidebarTitle: "Eval Modes"
+description: "4 composable eval modes — deterministic, LLM-judged, security probes, and full."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Each flag enables a set of tests. Flags are composable — combine them freely.
+
+## Composable flags
+
+```bash
+# Single modes:
+complior eval <url>                     # 168 deterministic (default)
+complior eval <url> --llm               # 212 LLM-judged only
+complior eval <url> --security          # 300 security probes only
+
+# Combinations:
+complior eval <url> --det --llm         # 168 + 212 = 380 conformity
+complior eval <url> --det --security    # 168 + 300 = 468
+complior eval <url> --llm --security    # 212 + 300 = 512
+
+# Everything:
+complior eval <url> --full              # 168 + 212 + 300 = 680 all
+
+# CI mode:
+complior eval <url> --ci --threshold 70 # exit code 2 if below threshold
+complior eval <url> --full -j 10        # 10 parallel workers
+```
+
+## Mode comparison
+
+| Mode | Flag | Tests | What it checks | Requires |
+|------|------|-------|---------------|----------|
+| **Deterministic** | `--det` (default) | 168 | Transparency, oversight, robustness, prohibited, logging | Nothing |
+| **LLM-judged** | `--llm` | 212 | Explanation quality, bias A/B pairs, accuracy, nuance | BYOK API key |
+| **Security** | `--security` | 300 | Injection, jailbreak, exfiltration, toxicity, content safety | Nothing |
+| **Full** | `--full` | 680 | All of the above | BYOK API key |
+
+## Concurrency
+
+Default: 5 parallel workers. Range: 1–50. Each phase runs in parallel internally, phases run sequentially. 50ms stagger between requests for rate-limit safety.
+
+```bash
+complior eval <url> -j 1     # sequential (debug)
+complior eval <url> -j 20    # aggressive parallel
+```
+
+## Aliases
+
+```bash
+complior redteam --target <url>       # alias for eval --security
+complior audit --scan . --target <url> # scan + eval + docs + evidence
+```

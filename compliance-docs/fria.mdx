@@ -1,8 +1,47 @@
 ---
-title: "Fria"
-description: "Coming soon"
+title: "FRIA"
+sidebarTitle: "FRIA"
+description: "Fundamental Rights Impact Assessment — required by Art.27 for all high-risk AI systems."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## What is FRIA?
+
+FRIA (Fundamental Rights Impact Assessment) is required by Art.27 of the EU AI Act **before** deploying any high-risk AI system. It documents how the system impacts fundamental rights and what mitigation measures are in place.
+
+## Generate FRIA
+
+```bash
+complior agent fria order-processor --organization "ACME Corp"
+```
+
+Output: `.complior/fria/fria-order-processor.md`
+
+## What gets pre-filled (80%)
+
+From your Agent Passport:
+- System name, description, risk class
+- Autonomy level and human oversight mechanisms
+- Model provider and data residency
+- Permissions and data access patterns
+- Applicable articles and obligations
+
+## What needs manual input (20%)
+
+Sections marked with `[TO BE COMPLETED: ...]`:
+- Specific fundamental rights impact analysis
+- Mitigation measures for identified risks
+- Approval and sign-off
+
+<Tip>
+  Use `complior fix --ai` to have LLM draft the remaining sections. Review and edit before submission.
+</Tip>
+
+## Additional flags
+
+```bash
+complior agent fria order-processor \
+  --organization "ACME Corp" \
+  --impact "Processing personal data for order recommendations" \
+  --mitigation "Human review for orders above €1000" \
+  --approval "Maria Schmidt, DPO"
+```

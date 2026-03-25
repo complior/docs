@@ -1,8 +1,46 @@
 ---
-title: "Hooks"
-description: "Coming soon"
+title: "Hooks Reference"
+sidebarTitle: "Hooks"
+description: "6 pre-hooks and 8 post-hooks — what each one does and how to configure it."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## Pre-hooks (before LLM call)
+
+| # | Hook | What it does | Default |
+|---|------|-------------|---------|
+| 1 | `logger` | Records incoming request for audit trail | On |
+| 2 | `prohibited` | Blocks Art.5 violations: 138 patterns, 8 categories, 6 languages | On |
+| 3 | `sanitize` | Redacts PII: 50+ types (IBAN, Steuernummer, BSN, NIR, PESEL) | On |
+| 4 | `disclosure` | Injects "I am an AI" system message | On |
+| 5 | `permission`* | Checks tools against allowlist/denylist from passport | Off |
+| 6 | `rate-limit`* | Sliding window enforcement from passport constraints | Off |
+
+*Agent mode only (`compliorAgent`)
+
+## Post-hooks (after LLM response)
+
+| # | Hook | What it does | Default |
+|---|------|-------------|---------|
+| 1 | `disclosure-verify` | Confirms AI disclosure present in response (4 languages) | On |
+| 2 | `content-marking` | Adds AI-generated metadata to response | On |
+| 3 | `escalation` | Detects if response requires human escalation | Off |
+| 4 | `bias-check` | Screens for bias across 15 EU Charter protected characteristics | Off |
+| 5 | `headers` | Adds compliance HTTP headers (X-AI-Disclosure, X-AI-Provider) | Off |
+| 6 | `budget`* | Tracks cost against session budget from passport | Off |
+| 7 | `action-log`* | Calls audit callback with full request/response | Off |
+| 8 | `circuit-breaker` | Cascade protection: stops calling LLM if error rate exceeds threshold | Off |
+
+*Agent mode only
+
+## Domain hooks (opt-in)
+
+Industry-specific hooks for specialized compliance:
+
+| Domain | What it adds |
+|--------|-------------|
+| **HR** | Candidate anonymization, fair hiring checks |
+| **Finance** | Audit logging, risk disclosure requirements |
+| **Healthcare** | Patient de-identification, diagnostic disclaimers |
+| **Education** | Content safety, assessment fairness |
+| **Legal** | Legal disclaimers, AI limitation warnings |
+| **Content** | AI-GENERATED marker in metadata |

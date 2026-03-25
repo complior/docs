@@ -1,8 +1,56 @@
 ---
-title: "Overview"
-description: "Coming soon"
+title: "Compliance Documents"
+sidebarTitle: "Overview"
+description: "6 document types Complior generates — FRIA, AI Policy, Worker Notification, and more."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+Complior generates all documents required by the EU AI Act. Each document is pre-filled from Agent Passport data (25–80%) and can be enriched by LLM (`--ai`).
+
+{/* NAPKIN: Paste into napkin.ai —
+6 Compliance Documents Complior Generates
+
+1. FRIA (Fundamental Rights Impact Assessment) — Art.27 — mandatory for high-risk — 80% pre-filled — complior agent fria
+2. AI Usage Policy — Art.6, Annex III — 5 industry templates (HR, Finance, Healthcare, Education, Legal) — 60% pre-filled
+3. Worker Notification — Art.26(7) — employee notification about AI use — 70% pre-filled
+4. Technical Documentation — Art.11 — system description for auditors — 50% pre-filled
+5. Risk Register — Art.9 — risk list with mitigation measures — 40% pre-filled from scan findings
+6. Audit Package (ZIP) — Art.21, 23 — everything combined: passports + evidence + docs + scores
+
+Data flow: Agent Passport pre-fills all 6 documents.
+Enhancement: complior fix --ai → LLM fills remaining placeholders.
+*/}
+
+## Document summary
+
+| Document | Article | Mandatory for | Pre-fill | Command |
+|----------|---------|--------------|----------|---------|
+| **FRIA** | Art.27 | High-risk systems | 80% | `complior agent fria <name>` |
+| **AI Usage Policy** | Art.6 | All AI systems | 60% | `complior agent policy <name> --industry hr` |
+| **Worker Notification** | Art.26(7) | Workplace AI | 70% | `complior agent notify <name>` |
+| **Technical Documentation** | Art.11 | High-risk | 50% | `complior fix` (B4) |
+| **Risk Register** | Art.9 | High-risk | 40% | `complior fix` (B3) |
+| **Audit Package** | Art.21, 23 | On request | N/A | `complior agent audit-package` |
+
+## Generation flow
+
+```
+Agent Passport (36 fields)
+    ↓
+complior fix → Document scaffolds (25-80% pre-filled)
+    ↓
+complior fix --ai → LLM fills [TO BE COMPLETED] sections
+    ↓
+complior agent audit-package → ZIP with everything
+```
+
+<CardGroup cols={2}>
+  <Card title="FRIA" icon="shield-halved" href="/compliance-docs/fria">
+    Fundamental Rights Impact Assessment for high-risk systems.
+  </Card>
+  <Card title="AI Policy" icon="file-contract" href="/compliance-docs/ai-policy">
+    Industry-specific AI usage policies.
+  </Card>
+  <Card title="Audit Package" icon="box-archive" href="/compliance-docs/audit-package">
+    Complete ZIP for the regulator.
+  </Card>
+</CardGroup>

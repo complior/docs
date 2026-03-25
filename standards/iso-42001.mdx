@@ -1,8 +1,29 @@
 ---
-title: "Iso 42001"
-description: "Coming soon"
+title: "ISO 42001"
+sidebarTitle: "ISO 42001"
+description: "39 Annex A controls mapped to Complior. Current coverage: ~45–50%."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+ISO/IEC 42001 is the first certifiable standard for AI management systems. 10 clauses (4–10) + 39 Annex A controls.
+
+## Mapped controls
+
+| Control | Requirement | Complior Feature | Status |
+|---------|------------|-----------------|--------|
+| A.5.2–5.4 | Risk/Impact Assessment | FRIA Generator | Done |
+| A.6.2.3–6 | V&V, deployment, monitoring | Scanner + Eval | Done |
+| A.6.2.9 | AI system documentation | Agent Passport | Done |
+| A.6.2.10 | Prohibited use policies | SDK prohibited hook | Done |
+| A.6.2.11 | Third-party components | SBOM (Cloud Scan) | Done |
+| A.7.6 | Data provenance | Evidence Chain | Done |
+| A.8.2 | AI disclosure | SDK disclosure hook | Done |
+| A.9.5 | Human oversight | SDK escalation hook | Done |
+| Clause 6.1.3 | Statement of Applicability | Document Generator | Planned |
+| A.2.2–2.3 | AI Policy | Policy Generator | Planned |
+| Clause 6.1.2 | Risk Register | Document Generator | Planned |
+
+## ISO 42001 + EU AI Act synergy
+
+<Tip>
+  ISO 42001 + NIST AI RMF + EU AI Act = the triple coverage. Complior builds the bridge between all three. A single `complior scan` produces scores for all frameworks simultaneously.
+</Tip>

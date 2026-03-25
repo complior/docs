@@ -1,8 +1,54 @@
 ---
 title: "Autonomy Levels"
-description: "Coming soon"
+sidebarTitle: "Autonomy L1–L5"
+description: "5-level autonomy scale with automatic AST detection."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+{/* NAPKIN: Paste into napkin.ai —
+AI Agent Autonomy Scale: L1 to L5
+
+Level L1 Assistive: Suggests options. Human decides AND executes. Example: Copilot autocomplete. Risk: Minimal.
+Level L2 Suggestive: Prepares action. Human confirms. Example: "Draft email ready. Send? [Y/n]". Risk: Minimal.
+Level L3 Supervised: Acts independently. Human can veto. Example: Order processor with 10-sec review. Risk: Limited.
+Level L4 Autonomous: Acts on its own. Human gets logs. Example: Customer support bot 24/7. Risk: Limited.
+Level L5 Fully Autonomous: Acts without notification. Example: Trading bot. Risk: High.
+
+Auto-detection from AST:
+Human gates + no unsupervised → L2
+Human gates + some unsupervised → L3
+No gates + logging → L4
+No gates + no logging → L5
+Nothing detected → L1
+*/}
+
+## The scale
+
+| Level | Name | Behavior | Example | Risk mapping |
+|-------|------|----------|---------|-------------|
+| **L1** | Assistive | Suggests. Human decides AND executes. | Copilot autocomplete | Minimal |
+| **L2** | Suggestive | Prepares action. Human confirms. | "Send email? [Y/n]" | Minimal |
+| **L3** | Supervised | Acts. Human can veto (time window). | Order processor, 10-sec review | Limited |
+| **L4** | Autonomous | Acts on its own. Human gets logs. | Customer support bot 24/7 | Limited |
+| **L5** | Fully Auto | Acts without notification. No human. | Trading bot, autonomous recruiter | High |
+
+## Auto-detection from code
+
+Complior's `autonomy-analyzer.ts` scans AST for human gate patterns and unsupervised actions:
+
+```
+human_approval_gates > 0 && unsupervised == 0     → L2
+human_approval_gates > 0 && unsupervised > 0       → L3
+human_approval_gates == 0 && unsupervised > 0 && logging  → L4
+human_approval_gates == 0 && unsupervised > 0 && !logging → L5
+nothing detected                                    → L1
+```
+
+Additionally detects `killSwitchPresent` — used for `oversight.override_mechanism`.
+
+## Impact on passport
+
+Autonomy level directly affects:
+- **Risk class** (L5 → high risk, L1–L2 → minimal)
+- **Applicable articles** (high-risk gets Art.6, 9, 11, 12, 13, 14, 26, 27, 49, 50)
+- **Oversight block** (generated only for high-risk or L3+)
+- **Deployer obligations** (more obligations for higher autonomy)

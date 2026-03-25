@@ -1,8 +1,42 @@
 ---
 title: "Audit Package"
-description: "Coming soon"
+sidebarTitle: "Audit Package"
+description: "Complete ZIP archive for the regulator — passports, evidence, documents, scores."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## Generate audit package
+
+```bash
+complior agent audit-package
+```
+
+Output: `complior-audit-2026-03-25.tar.gz`
+
+## What's inside
+
+| Item | Description |
+|------|------------|
+| **All Agent Passports** | Every `*-manifest.json` with ed25519 signatures |
+| **Evidence Chain** | Complete `chain.json` — tamper-proof audit trail |
+| **FRIA Reports** | All generated FRIA documents |
+| **AI Policies** | All generated policy documents |
+| **Worker Notifications** | All generated notifications |
+| **Scan Reports** | Latest scan results with scores |
+| **Eval Results** | Conformity + security scores (if eval was run) |
+| **Executive Summary** | Auto-generated overview of compliance status |
+
+## For auditors
+
+The package is self-verifying:
+1. Each passport has an ed25519 signature — verify independently
+2. Evidence chain has hash links — verify chain integrity
+3. Scan reports contain raw findings — reproduce by re-running scan
+
+```bash
+# Metadata only (JSON) — for programmatic use
+complior agent audit-package --json
+```
+
+<Tip>
+  Run `complior audit --scan . --target <url>` to combine scan + eval + docs + evidence into one command before generating the audit package.
+</Tip>

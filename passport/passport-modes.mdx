@@ -1,8 +1,48 @@
 ---
 title: "Passport Modes"
-description: "Coming soon"
+sidebarTitle: "3 Modes"
+description: "Three ways to generate a passport: Auto (from code), Runtime (from observation), Manual (from form)."
 ---
 
+## Mode comparison
+
+| | Mode 1: Auto | Mode 2: Runtime | Mode 3: Manual |
+|---|---|---|---|
+| **Input** | Source code (AST) | MCP tool calls + Eval | User form |
+| **Command** | `complior agent init` | `complior proxy` / `eval` | SaaS wizard |
+| **Auto-fill** | 85–95% | 40–70% | 0% (with Registry pre-fill) |
+| **Confidence** | 0.85–0.95 | 0.55 | N/A (attestation) |
+| **Verification** | Code-verified | Behavior-observed | Unverified |
+| **Use case** | Own code | Black-box vendor agent | Vendor AI (no API) |
+| **User** | Developer | DevOps / Platform Eng | DPO / Compliance |
+| **Product** | CLI (free) | CLI + SaaS | SaaS (paid) |
+| **Status** | **Production** | Planned | SaaS Sprint |
+
+## Mode 1: Auto (from code)
+
+```bash
+complior agent init
+```
+
+Scans your codebase through AST analysis. Detects frameworks (57+), models, permissions, human gates, autonomy level, kill-switch. Risk class computed from autonomy × project domain.
+
+**Best for:** Your own AI agents where source code is available.
+
+## Mode 2: Runtime (from observation)
+
+Two data sources:
+
+1. **MCP Proxy** — intercepts MCP tool calls from black-box agents (Cursor, Windsurf, vendor agents). Records tools_used, data_access, timing, success/error rates.
+2. **Eval** — `complior eval --target <url>` tests the system with 680 probes and records behavioral data.
+
+**Best for:** Vendor AI agents you deploy but don't have source code for.
+
 <Note>
-  This page is under construction. Check back soon for detailed content.
+  Mode 2 is planned. MCP Proxy infrastructure is 60% built. Eval integration is in development.
 </Note>
+
+## Mode 3: Manual (SaaS)
+
+SaaS Dashboard wizard with 5-step form. Pre-filled from AI Registry (5,011+ tools) — vendor DPA status, risk score, data residency, known capabilities.
+
+**Best for:** Vendor AI services like Notion AI, Intercom Fin, Stripe Radar — no code, no API.

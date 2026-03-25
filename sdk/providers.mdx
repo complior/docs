@@ -1,8 +1,27 @@
 ---
 title: "Providers"
-description: "Coming soon"
+sidebarTitle: "Providers"
+description: "4 supported LLM providers: OpenAI, Anthropic, Google, Vercel AI SDK."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+The SDK auto-detects provider type from the client object. No configuration needed.
+
+## Supported providers
+
+| Provider | Client | Method intercepted |
+|----------|--------|-------------------|
+| **OpenAI** | `new OpenAI()` | `chat.completions.create` |
+| **Anthropic** | `new Anthropic()` | `messages.create` |
+| **Google** | `new GoogleGenerativeAI()` | `generateContent` |
+| **Vercel AI** | `openai` / `anthropic` / `google` | `generateText` / `streamText` |
+
+## How it works
+
+The SDK uses JavaScript `Proxy` to intercept LLM client methods. When you call `client.chat.completions.create(...)`, the proxy:
+
+1. Runs all pre-hooks on the request
+2. If no hook blocks → calls the original LLM method
+3. Runs all post-hooks on the response
+4. Returns the (potentially modified) response
+
+The original client API is fully preserved — method signatures, return types, streaming, everything works as expected.

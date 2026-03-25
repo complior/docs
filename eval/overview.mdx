@@ -1,8 +1,112 @@
 ---
-title: "Overview"
-description: "Coming soon"
+title: "Eval Overview"
+sidebarTitle: "Overview"
+description: "Dynamic AI system testing — 680 probes against live endpoints. Tests actual behavior, not just code."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+`complior eval` tests a **running** AI system. While scan analyzes code statically, eval sends 680 probes to a live endpoint and checks **real behavior** against EU AI Act requirements.
+
+```bash
+complior eval --target http://localhost:3000/api/chat
+```
+
+```
+scan  = analyzes CODE        (static, offline, development)
+eval  = tests SYSTEM         (dynamic, live endpoint, pre-deploy)
+```
+
+{/* NAPKIN: Paste into napkin.ai —
+Scan vs Eval: Two Complementary Approaches
+
+SCAN (Static Code Analysis): Analyzes SOURCE CODE. Sees disclosure-code exists. Sees kill-switch pattern. Sees bias-check hook. Sees logging call. CANNOT check: Does bot actually say "I am AI"? Does kill-switch work? Is there real discrimination? Are logs written?
+
+EVAL (Dynamic System Testing): Tests RUNNING SYSTEM. Checks bot ACTUALLY says "I am AI" (5 languages). Checks kill-switch ACTUALLY fires. Checks REAL discrimination via 30 A/B paired tests. Checks logs ARE written. Checks explanation quality via LLM-judge.
+
+Together scan + eval cover ~70% of all substantive EU AI Act requirements.
+Remaining ~30%: organizational processes requiring human audit.
+*/}
+
+## How it works
+
+<Steps>
+  <Step title="Configure target">
+    Point eval at your AI system's endpoint.
+    ```bash
+    complior eval --target http://localhost:3000/api/chat
+    ```
+  </Step>
+  <Step title="Probes are sent">
+    680 test probes sent to your endpoint across 3 phases: deterministic (168), LLM-judged (212), security attacks (300).
+  </Step>
+  <Step title="Responses evaluated">
+    Each response scored against EU AI Act criteria. Bias measured via A/B paired tests. Security via attack success rate.
+  </Step>
+  <Step title="Results recorded">
+    Conformity Score + Security Score. Per-category breakdown. Critical gaps identified. Evidence chain updated.
+  </Step>
+</Steps>
+
+## Target adapters
+
+<Tabs>
+  <Tab title="Generic HTTP">
+    ```bash
+    complior eval --target http://localhost:3000/api/chat
+    ```
+    Sends `POST { "message": "{{probe}}" }`, reads response body as text.
+  </Tab>
+  <Tab title="OpenAI">
+    ```bash
+    complior eval --target openai://api.openai.com --model gpt-4o --api-key sk-...
+    ```
+    Uses OpenAI chat completions format.
+  </Tab>
+  <Tab title="Anthropic">
+    ```bash
+    complior eval --target anthropic://api.anthropic.com --model claude-3.5 --api-key sk-ant-...
+    ```
+    Uses Anthropic messages format.
+  </Tab>
+  <Tab title="Ollama">
+    ```bash
+    complior eval --target ollama://localhost:11434 --model llama3
+    ```
+    Uses Ollama chat format. Fully local.
+  </Tab>
+</Tabs>
+
+## Output
+
+```
+Conformity Score: 72/100 (C)
+Security Score:   85/100 (B)
+
+Categories:
+  CT-1  Transparency         55 tests  82% pass  B
+  CT-2  Human Oversight      35 tests  74% pass  C
+  CT-3  Explanation          30 tests  67% pass  D
+  CT-4  Bias & Fairness      75 tests  71% pass  C
+  CT-7  Prohibited Practices 40 tests  95% pass  A
+
+Critical gaps: Art.13 (Explanation), Art.14 (Oversight)
+Bias A/B pairs failed: 3/30 (worst: age: 0.18)
+```
+
+## Passport integration
+
+With `--agent`, eval results are written directly into the passport:
+
+```bash
+complior eval --target http://localhost:3000/api/chat --agent order-processor
+```
+
+This populates the `compliance.eval` block with 20+ fields including conformity/security scores, per-category pass rates, bias details, and hallucination rate.
+
+<CardGroup cols={2}>
+  <Card title="Eval Modes" icon="sliders" href="/eval/eval-modes">
+    4 composable modes: deterministic, LLM-judged, security, full.
+  </Card>
+  <Card title="Conformity Tests" icon="clipboard-check" href="/eval/conformity-tests">
+    11 EU AI Act categories, 380 tests.
+  </Card>
+</CardGroup>

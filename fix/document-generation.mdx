@@ -1,8 +1,53 @@
 ---
 title: "Document Generation"
-description: "Coming soon"
+sidebarTitle: "Document Generation"
+description: "14 EU AI Act document templates, pre-filled from Agent Passport data."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+When `complior fix` applies B-category strategies, it generates compliance documents from templates. Each document is pre-filled with data from your Agent Passport.
+
+## Generation pipeline
+
+<Steps>
+  <Step title="Template selection">
+    Based on finding type, the fixer selects from 14 EU AI Act templates.
+  </Step>
+  <Step title="Passport data injection">
+    9 passport fields used as context: `display_name`, `description`, `risk_class`, `autonomy_level`, `model.*`, `owner.team`, `oversight.*`, `permissions.tools`, `constraints.prohibited_actions`.
+  </Step>
+  <Step title="Scaffold output">
+    Document created with filled sections + `[TO BE COMPLETED: ...]` markers for sections requiring manual input.
+  </Step>
+  <Step title="Compliance flags set">
+    Passport updated: `fria_completed: true`, `policy_generated: true`, etc.
+  </Step>
+</Steps>
+
+## Available templates
+
+| # | Template | Article | Pre-fill rate | Output path |
+|---|----------|---------|--------------|-------------|
+| 1 | FRIA | Art.27 | 80% | `.complior/fria/fria-{agent}.md` |
+| 2 | AI Usage Policy (HR) | Art.6 | 60% | `.complior/docs/ai-policy-hr.md` |
+| 3 | AI Usage Policy (Finance) | Art.6 | 60% | `.complior/docs/ai-policy-finance.md` |
+| 4 | AI Usage Policy (Healthcare) | Art.6 | 60% | `.complior/docs/ai-policy-healthcare.md` |
+| 5 | AI Usage Policy (Education) | Art.6 | 60% | `.complior/docs/ai-policy-education.md` |
+| 6 | AI Usage Policy (Legal) | Art.6 | 60% | `.complior/docs/ai-policy-legal.md` |
+| 7 | Worker Notification | Art.26(7) | 70% | `.complior/docs/worker-notification.md` |
+| 8 | Risk Management Plan | Art.9 | 40% | `.complior/docs/risk-plan.md` |
+| 9 | Technical Documentation | Art.11 | 50% | `.complior/docs/tech-docs.md` |
+| 10 | Transparency Note | Art.50 | 60% | `.complior/docs/transparency.md` |
+| 11 | Statement of Applicability | ISO 42001 | 45% | `.complior/docs/soa.md` |
+| 12 | Risk Register | Art.9 | 40% | `.complior/docs/risk-register.md` |
+| 13 | QMS Documentation | ISO 42001 | 35% | `.complior/docs/qms.md` |
+| 14 | Monitoring Plan | Art.72 | 30% | `.complior/docs/monitoring-plan.md` |
+
+## Direct generation commands
+
+You can also generate documents directly:
+
+```bash
+complior agent fria order-processor --organization "ACME Corp"
+complior agent policy order-processor --industry hr
+complior agent notify order-processor --company-name "ACME"
+```

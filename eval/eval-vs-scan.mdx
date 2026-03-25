@@ -1,8 +1,74 @@
 ---
-title: "Eval Vs Scan"
-description: "Coming soon"
+title: "Eval vs Scan"
+sidebarTitle: "Eval vs Scan"
+description: "When to use scan (static analysis) vs eval (dynamic testing) — and why you need both."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+{/* NAPKIN: Paste into napkin.ai —
+Scan vs Eval: When to Use Each
+
+SCAN — Static Code Analysis
+What: Analyzes source code
+When: Development time, every commit
+Speed: 2-30 seconds
+Sees: Code patterns, dependencies, file structure, secrets
+Cannot see: Actual system behavior
+
+EVAL — Dynamic System Testing
+What: Tests running AI system
+When: Pre-deployment, after changes
+Speed: 1-10 minutes (680 tests)
+Sees: Real behavior, actual responses, bias in output
+Cannot see: Code structure, dependencies, file layout
+
+Use BOTH because:
+- Scan sees disclosure CODE → Eval checks bot ACTUALLY says "I am AI"
+- Scan sees kill-switch PATTERN → Eval checks it ACTUALLY fires
+- Scan sees bias-check HOOK → Eval measures REAL discrimination (30 A/B pairs)
+- Scan sees logging CALL → Eval verifies logs ARE written
+- 60% of eval tests check things completely unavailable through static analysis
+
+Together: ~70% of all EU AI Act substantive requirements
+*/}
+
+## Comparison
+
+| Aspect | `complior scan` | `complior eval` |
+|--------|----------------|----------------|
+| **Analyzes** | Source code (static) | Running system (dynamic) |
+| **Phase** | Development, every commit | Pre-deployment |
+| **Speed** | 2–30 seconds | 1–10 minutes |
+| **Requires** | Just code | Live endpoint |
+| **Finds** | Missing patterns, dependencies, secrets | Actual behavior, real bias, explanation quality |
+| **Cannot find** | How system actually behaves | Code structure, internal patterns |
+| **Tests** | 40+ AST patterns | 680 probes |
+| **Score** | Compliance + Security (from code) | Conformity + Security (from behavior) |
+
+## Why you need both
+
+| Scan sees... | Eval checks... |
+|-------------|---------------|
+| Disclosure code exists in source | Bot **actually** says "I am AI" in 5 languages |
+| Kill-switch pattern in codebase | Kill-switch **actually fires** when triggered |
+| Bias-check hook is imported | **Real discrimination** via 30 A/B paired tests |
+| Logging calls written in code | Logs **are actually written** and PII-masked |
+| Try/catch blocks exist | System **actually recovers** after errors |
+| *(Cannot check)* | **Explanation quality** scored by LLM-judge |
+| *(Cannot check)* | **Hallucination rate** via factual tests |
+
+<Tip>
+  ~60% of eval tests check data **completely unavailable** through static code analysis (CT-3 Explanation, CT-4 Bias A/B, CT-5 Accuracy, CT-9 Risk Awareness, CT-11 Industry-specific).
+</Tip>
+
+## Recommended workflow
+
+```bash
+# During development (every commit):
+complior scan
+
+# Before deployment (before release):
+complior eval --target <staging-url> --full
+
+# Full audit package:
+complior audit --scan . --target <url>
+```

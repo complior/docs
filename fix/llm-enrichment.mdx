@@ -1,8 +1,43 @@
 ---
-title: "Llm Enrichment"
-description: "Coming soon"
+title: "LLM Enrichment"
+sidebarTitle: "LLM Enrichment"
+description: "Use --ai flag to have LLM fill document placeholders. Safe, proxied, and optional."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## How it works
+
+```bash
+complior fix --ai
+```
+
+When `--ai` is used, the document generation pipeline adds an extra step: LLM fills `[TO BE COMPLETED]` and `<!-- GUIDANCE -->` markers using passport data as context.
+
+| Without `--ai` | With `--ai` |
+|----------------|-------------|
+| Documents scaffolded with placeholders | LLM fills placeholders (90–95% complete) |
+| Compliance flags already set | Same flags, richer content |
+| 25–80% pre-filled from passport | 90–95% filled |
+| Instant | +10–30 seconds per document |
+
+## Safety
+
+<Check>
+  The LLM call is wrapped through `@complior/sdk` proxy with `prohibited`, `sanitize`, and `rate-limit` hooks active. The LLM cannot bypass compliance checks.
+</Check>
+
+**LLM does NOT modify passport JSON.** It only enriches document markdown files. Compliance flags (`fria_completed`, `policy_generated`) are set identically with or without `--ai`.
+
+## Fallback
+
+If LLM call fails (network error, rate limit, invalid key), the fixer returns the document from the scaffold stage — with placeholders but all compliance flags intact. No data loss, no silent failure.
+
+## BYOK configuration
+
+Configure your LLM provider in `.complior/config.toml`:
+
+```toml
+[llm]
+provider = "openai"          # openai, anthropic, openrouter, ollama
+model = "gpt-4o"
+api_key_env = "OPENAI_API_KEY"  # reads from environment variable
+```

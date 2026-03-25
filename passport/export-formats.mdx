@@ -1,8 +1,37 @@
 ---
 title: "Export Formats"
-description: "Coming soon"
+sidebarTitle: "Export Formats"
+description: "Export passports to A2A, AIUC-1, and NIST AI RMF formats."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## Available formats
+
+<Tabs>
+  <Tab title="Google A2A">
+    ```bash
+    complior agent export order-processor --format a2a
+    ```
+    Google's Agent-to-Agent Card format. Used for agent interoperability — identity, capabilities, authentication.
+  </Tab>
+  <Tab title="AIUC-1">
+    ```bash
+    complior agent export order-processor --format aiuc-1
+    ```
+    EU AI Use Case certification format. Covers 6 readiness categories for conformity assessment.
+  </Tab>
+  <Tab title="NIST AI RMF">
+    ```bash
+    complior agent export order-processor --format nist
+    ```
+    US National Institute of Standards AI Risk Management Framework format. Maps to GOVERN, MAP, MEASURE, MANAGE functions.
+  </Tab>
+</Tabs>
+
+## Import
+
+```bash
+# Import from A2A format
+complior agent import --from a2a agent-card.json
+```
+
+Imported passports are validated against the Complior schema and signed with ed25519.

@@ -1,8 +1,34 @@
 ---
-title: "Ai Policy"
-description: "Coming soon"
+title: "AI Usage Policy"
+sidebarTitle: "AI Policy"
+description: "Industry-specific AI usage policy templates — HR, Finance, Healthcare, Education, Legal."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## Generate policy
+
+```bash
+complior agent policy order-processor --industry hr
+```
+
+5 industry templates available:
+
+| Industry | Key focus areas |
+|----------|----------------|
+| **HR** | Fair hiring, candidate anonymization, decision explanation |
+| **Finance** | Audit logging, risk disclosure, automated decision limits |
+| **Healthcare** | Patient de-identification, diagnostic disclaimers, HITL requirements |
+| **Education** | Content safety, assessment fairness, student data protection |
+| **Legal** | Disclaimer obligations, privilege warnings, AI limitation disclosure |
+
+## What gets pre-filled (60%)
+
+From passport: system name, risk class, autonomy level, permissions, constraints, oversight mechanisms.
+
+## Additional flags
+
+```bash
+complior agent policy order-processor \
+  --industry hr \
+  --organization "ACME Corp" \
+  --approver "Maria Schmidt, Head of Compliance"
+```

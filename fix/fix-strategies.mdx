@@ -1,8 +1,58 @@
 ---
 title: "Fix Strategies"
-description: "Coming soon"
+sidebarTitle: "Fix Strategies"
+description: "18 strategies across 5 categories: Code, Docs, Config, Dependencies, Passport."
 ---
 
-<Note>
-  This page is under construction. Check back soon for detailed content.
-</Note>
+## Category A: Code (9 strategies)
+
+| ID | Strategy | What it does | Score impact |
+|----|----------|-------------|-------------|
+| A1 | SDK Wrapper | Adds `@complior/sdk` proxy wrapper around LLM client | +5–8 |
+| A2 | Disclosure Inject | Adds "I am an AI" system message (Art.50) | +3–5 |
+| A3 | Input Validation | Adds request validation and sanitization | +2–3 |
+| A4 | Error Handling | Adds try/catch with compliance-aware error responses | +1–2 |
+| A5 | Logging | Adds structured logging for audit trail (Art.12) | +2–3 |
+| A6 | Permission Guard | Adds tool allowlist/denylist enforcement | +2–3 |
+| A7 | HITL Gate | Adds human-in-the-loop approval gate (Art.14) | +3–5 |
+| A8 | Config Hardening | Hardens configuration files | +1–2 |
+| A9 | Unsafe Deserialization | Replaces pickle with safetensors/JSON | +1–2 |
+
+## Category B: Documents (6 strategies)
+
+| ID | Document | Article | Pre-fill from passport |
+|----|----------|---------|----------------------|
+| B1 | FRIA (Fundamental Rights Impact Assessment) | Art.27 | 80% |
+| B2 | AI Usage Policy | Art.6, Annex III | 60% |
+| B3 | Risk Management Plan | Art.9 | 40% |
+| B4 | Technical Documentation | Art.11 | 50% |
+| B5 | Worker Notification | Art.26(7) | 70% |
+| B6 | Transparency Note | Art.50 | 60% |
+
+<Tip>
+  The more complete your Agent Passport, the more data flows into documents automatically. Run `complior agent init` before `complior fix` for best results.
+</Tip>
+
+## Category C: Config (3 strategies)
+
+| ID | Strategy | What it does |
+|----|----------|-------------|
+| C1 | Secret Rotation | Detects exposed secrets, suggests rotation |
+| C2 | Gitignore Hardening | Adds AI keys, model files, .complior/keys/ to .gitignore |
+| C3 | Docker Security | Adds non-root user, read-only filesystem |
+
+## Category D: Dependencies (3 strategies)
+
+| ID | Strategy | What it does |
+|----|----------|-------------|
+| D1 | CVE Upgrade | Suggests updates for vulnerable dependencies |
+| D2 | License Check | Flags incompatible licenses in AI dependencies |
+| D3 | Model Format | Recommends safetensors over pickle for model files |
+
+## Category E: Passport (3 strategies)
+
+| ID | Strategy | What it does |
+|----|----------|-------------|
+| E1 | Risk Level Update | Recalculates risk class from latest scan data |
+| E2 | Compliance Fields | Updates obligation met/pending lists |
+| E3 | Evidence Chain | Records fix in cryptographic evidence chain |
