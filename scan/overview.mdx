@@ -39,15 +39,97 @@ Output: Compliance Score 0-100 + Security Score 0-100 across 6 frameworks.
 | **Import Graph** | 45 AI packages + transitive dependencies mapped |
 | **File Limit** | 500 files max, 1 MB each |
 
-## Output structure
+## Example output
+
+{/* TODO: Replace with GIF/screenshot showing colored terminal output */}
+
+```
+◆ Complior v1.0.0  ·  EU AI Act Compliance Scanner
+────────────────────────────────────────────────────────────────────────────────
+Scanning  acme-ai-support
+Files     57 collected
+Elapsed   82ms
+Layers    L1 File Presence · L2 Document Structure · L3 Dependencies
+          · L4 Code Patterns · NHI Secrets · GPAI Systemic Risk
+
+────────────────────────────────────────────────────────────────────────────────
+COMPLIANCE SCORE                                                   33 / 100  F
+SECURITY SCORE                                                             N/A
+Run `complior eval --security <url>` for security scoring
+────────────────────────────────────────────────────────────────────────────────
+!! Score capped — critical violations limit maximum achievable score
+
+Framework Breakdown
+  EU AI Act                   33 / 100   ███████░░░░░░░░░░░░░
+
+Layer Results
+  L1    File Presence            FAIL   13 issues found
+  L3    Dependencies             FAIL   3 issues found
+  L4    Code Patterns            WARN   46 issues found
+  NHI   Secrets                  FAIL   7 issues found
+  CROSS Cross-Layer              WARN   3 issues found
+  GPAI  Systemic Risk            PASS   1 checks passed
+
+────────────────────────────────────────────────────────────────────────────────
+FINDINGS  (72 total · 6 critical · 8 high · 55 medium)
+────────────────────────────────────────────────────────────────────────────────
+
+acme-ai-support-anthropic · AI System  (4 findings)
+
+  L4 Code Patterns
+    F-001  ●  MEDIUM  [L4]  Art. 15(4) · Security Vulnerability
+       WARNING: Hardcoded API key in source code
+       File:  src/agents/autonomous-agent.ts:12
+       Fix:  Move API keys to environment variables or secret management
+
+  NHI Secrets
+    F-028  ✖  CRITICAL  [NHI]  Art. 15(4) · Secrets: Api_key
+       Anthropic API key detected: sk-a...34yz
+       File:  src/agents/llm-service.py:12
+       Fix:  Remove or externalize the secret from source code
+
+PROJECT-LEVEL (44 findings)
+
+  L1 File Presence
+    F-029  ▲  HIGH  [L1]  Art. 26(4) · Agent Passport
+       No Agent Passport found — AI SDK detected but no
+       .complior/agents/*-manifest.json (Art. 26(4))
+       Fix:  Run `complior agent init` to generate an Agent Passport
+
+  ...
+
+PER-AGENT SUMMARY
+────────────────────────────────────────────────────────────────────────────────
+
+  AGENT                     FINDINGS CRITICAL   HIGH  FILES
+  -------------------------------------------------------
+  acme-ai-support-anthropic        4        0      0      2
+  acme-ai-support-autogen          0        0      0      0
+  acme-ai-support-bedrock          2        0      0      1
+  acme-ai-support-crewai           0        0      0      0
+  acme-ai-support-langchain        1        0      0      1
+  acme-ai-support-openai          20        1      0      9
+
+────────────────────────────────────────────────────────────────────────────────
+QUICK ACTIONS
+────────────────────────────────────────────────────────────────────────────────
+Auto-fix available        complior fix
+Deep scan                 complior scan --deep
+Full interactive view     complior tui
+Export JSON               complior scan --json > report.json
+
+Next: fix 6 critical issues to improve your score
+```
+
+## JSON output
+
+Use `--json` for structured output in CI/CD pipelines:
 
 ```json
 {
-  "score": { "compliance": 74, "security": 85 },
+  "score": { "compliance": 33, "security": null },
   "frameworks": {
-    "eu-ai-act": { "score": 74, "grade": "C" },
-    "owasp-llm": { "score": 85, "grade": "B" },
-    "mitre-atlas": { "score": 82, "grade": "B" }
+    "eu-ai-act": { "score": 33, "grade": "F" }
   },
   "findings": [
     {
@@ -59,8 +141,7 @@ Output: Compliance Score 0-100 + Security Score 0-100 across 6 frameworks.
       "message": "No AI disclosure found in agent code",
       "file": "src/agents/order-agent.ts",
       "line": 42,
-      "fixable": true,
-      "strategy": "A2"
+      "fixable": true
     }
   ]
 }
