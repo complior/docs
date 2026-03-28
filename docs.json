@@ -1,11 +1,27 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "Complior",
   "colors": {
-    "primary": "#1A56DB",
-    "light": "#3B82F6",
-    "dark": "#1E293B"
+    "primary": "#14B8A6",
+    "light": "#2DD4BF",
+    "dark": "#0D9488"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Fraunces",
+      "weight": 700
+    },
+    "body": {
+      "family": "Plus Jakarta Sans",
+      "weight": 400
+    }
+  },
+  "background": {
+    "decoration": "gradient"
+  },
+  "appearance": {
+    "default": "system"
   },
   "favicon": "/favicon.svg",
   "logo": {
