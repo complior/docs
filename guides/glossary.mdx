@@ -1,0 +1,46 @@
+---
+title: "Glossary"
+sidebarTitle: "Glossary"
+description: "Key terms and concepts used in Complior and EU AI Act compliance."
+---
+
+## Complior concepts
+
+| Term | Definition |
+|------|-----------|
+| **Agent Passport** | Standardized 36-field identity card for an AI system. Ed25519 signed. Contains risk class, autonomy level, permissions, compliance score, and more. |
+| **Compliance score** | 0–100 rating of an AI system's EU AI Act readiness. Weighted across 5 scan layers. |
+| **Compliance gate** | Automatic rescan triggered by file changes (200ms debounce). Blocks deployment if score drops below threshold. |
+| **Evidence chain** | Append-only log of compliance actions. Each entry is SHA-256 hashed and ed25519 signed, forming a tamper-proof chain. |
+| **Finding** | A specific compliance issue detected by the scanner. Has severity (critical/high/medium/low), layer, obligation mapping, and fix suggestion. |
+| **Layer (L1–L5)** | Scan analysis layers: L1 (file presence), L2 (document structure), L3 (dependencies), L4 (code patterns), L5 (LLM deep analysis). |
+| **Probe** | A single test case in the eval suite. Sends a request to a live endpoint and evaluates the response. |
+| **Scan tier** | Level of analysis depth: Tier 0 (offline base), Tier 1 (with secrets), Tier 2 (external tools), Tier 3 (cloud-enriched). |
+
+## EU AI Act terms
+
+| Term | Definition |
+|------|-----------|
+| **AI system** | Software that generates outputs (predictions, decisions, content) using machine learning, logic-based, or statistical approaches. |
+| **Deployer** | Organization that uses an AI system under its authority in a professional context. |
+| **FRIA** | Fundamental Rights Impact Assessment. Required before deploying high-risk AI. Documents impact on fundamental rights and mitigation measures. |
+| **GPAI** | General-Purpose AI. Models trained on broad data for many tasks (e.g., GPT-4, Claude). Extra obligations under Art. 50–55. |
+| **High-risk AI** | AI systems in Annex III domains: hiring, credit, education, healthcare, law enforcement, critical infrastructure. Subject to the heaviest obligations. |
+| **Limited-risk AI** | AI requiring transparency: chatbots, deepfakes, emotion recognition. Must disclose AI nature to users. |
+| **Obligation** | A specific legal requirement from the EU AI Act. Complior maps 108 obligations to features. |
+| **Provider** | Organization that develops an AI system or places it on the market. Bears primary compliance responsibility. |
+| **Risk class** | Classification of AI system by risk level: unacceptable (banned), high, limited, or minimal. |
+
+## Technical terms
+
+| Term | Definition |
+|------|-----------|
+| **A2A** | Google's Agent-to-Agent protocol. Complior can export passports in A2A format. |
+| **AIUC-1** | AI Usage Card standard (version 1). 15-requirement certification framework. |
+| **AST** | Abstract Syntax Tree. Used by L4 scanner for code pattern detection without running the code. |
+| **CycloneDX** | SBOM (Software Bill of Materials) standard. Complior generates CycloneDX 1.5 JSON. |
+| **Ed25519** | Elliptic curve digital signature algorithm. Used for passport and evidence chain signing. |
+| **MCP** | Model Context Protocol. Enables AI agents to use Complior tools directly. |
+| **SARIF** | Static Analysis Results Interchange Format. Standard for code scanning results. Supported by GitHub Code Scanning and VS Code. |
+| **SBOM** | Software Bill of Materials. Lists all dependencies, including AI SDKs and banned packages. |
+| **SSE** | Server-Sent Events. Used by the daemon for real-time updates (scan results, score changes). |

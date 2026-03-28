@@ -1,0 +1,86 @@
+---
+title: "complior daemon"
+sidebarTitle: "daemon"
+description: "Background daemon management — start, stop, and status."
+---
+
+```bash
+complior daemon <subcommand> [flags]
+```
+
+The daemon is a background process that runs the TypeScript engine, file watcher, MCP server, and HTTP API. The TUI and CLI communicate with the daemon via HTTP.
+
+## Subcommands
+
+### `daemon start`
+
+Start the background daemon.
+
+```bash
+complior daemon start [--watch] [--port <N>]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--watch` | Enable file watcher for auto-rescan | on |
+| `--port <N>` | HTTP API port | 3578 |
+
+<Tip>
+  `complior daemon` without subcommand is equivalent to `complior daemon start --watch`.
+</Tip>
+
+The daemon writes a PID file to `.complior/daemon.pid`:
+
+```json
+{
+  "pid": 12345,
+  "port": 3578,
+  "started_at": "2026-03-28T14:00:00Z"
+}
+```
+
+### `daemon status`
+
+Show running daemon status.
+
+```bash
+complior daemon status
+```
+
+```
+Daemon: running (PID 12345, port 3578)
+Uptime: 2h 15m
+Last scan: 2026-03-28T14:30:00Z
+Agents: 3
+Score: 72/100
+```
+
+### `daemon stop`
+
+Stop the running daemon.
+
+```bash
+complior daemon stop
+```
+
+Sends SIGTERM, waits 5 seconds, then SIGKILL if needed.
+
+## Auto-launch
+
+When you run `complior` (TUI), it automatically:
+
+1. Checks for a running daemon via `.complior/daemon.pid`
+2. If found → connects to it (won't kill on TUI exit)
+3. If not found → starts a new daemon (auto-managed)
+
+This means you rarely need to manage the daemon manually.
+
+## File watcher
+
+With `--watch` enabled, the daemon monitors your project for file changes:
+
+- **Debounce:** 200ms after last change
+- **Trigger:** Auto-rescan → score update → SSE notification
+- **Scope:** Files matching scan patterns (not `node_modules`, `.git`, etc.)
+
+The file watcher is the core of the **compliance gate** — every code change triggers an immediate compliance check.

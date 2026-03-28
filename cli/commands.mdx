@@ -1,0 +1,88 @@
+---
+title: "CLI Reference"
+sidebarTitle: "All Commands"
+description: "Complete command reference for the complior CLI. 40+ commands with flags and examples."
+---
+
+The `complior` binary is a single CLI that combines a TUI dashboard, headless commands, and daemon management.
+
+## Global flags
+
+| Flag | Description |
+|------|-------------|
+| `--engine-url <URL>` | Override engine URL (default: `http://localhost:3578`) |
+| `--resume` | Resume previous session |
+| `--theme <THEME>` | Color theme: `dark`, `light`, `dracula`, `nord`, `solarized` |
+| `-y, --yes` | Skip interactive onboarding, use defaults |
+| `--no-color` | Disable colored output |
+
+## Command overview
+
+| Command | Description |
+|---------|-------------|
+| `complior` | Launch TUI dashboard (starts daemon if needed) |
+| [`complior scan`](/cli/scan) | Static compliance analysis |
+| [`complior eval`](/cli/eval) | Dynamic system evaluation |
+| [`complior fix`](/cli/fix) | Apply compliance fixes |
+| [`complior agent`](/cli/agent) | Agent Passport management |
+| [`complior daemon`](/cli/daemon) | Background daemon control |
+| `complior init` | Initialize `.complior/` project config |
+| `complior report` | Generate compliance report |
+| `complior chat` | Chat with compliance assistant |
+| `complior audit` | Combined scan + eval |
+| `complior supply-chain` | Audit AI dependencies |
+| `complior cost` | Estimate remediation cost |
+| `complior debt` | Compliance debt score |
+| `complior simulate` | Simulate compliance actions |
+| `complior jurisdiction` | EU/EEA jurisdiction info |
+| `complior doc` | Generate compliance documents |
+| `complior cert` | Certification readiness |
+| `complior redteam` | Adversarial security testing |
+| `complior proxy` | MCP proxy bridge |
+| `complior sync` | Sync with SaaS dashboard |
+| `complior login` | Authenticate with SaaS |
+| `complior tools` | External tools management |
+| `complior doctor` | Diagnose system health |
+| `complior update` | Check for updates |
+| `complior version` | Show version |
+
+## Quick start
+
+```bash
+# Initialize project
+complior init
+
+# Scan for compliance issues
+complior scan
+
+# Auto-fix what's possible
+complior fix
+
+# Launch interactive dashboard
+complior
+```
+
+## Headless vs TUI
+
+Commands like `scan`, `fix`, `agent`, `eval` run **headless** — they print results and exit. Running `complior` with no arguments launches the **TUI dashboard** with 9 interactive pages.
+
+<CardGroup cols={2}>
+  <Card title="Scan" icon="magnifying-glass" href="/cli/scan">
+    Static analysis flags and output formats.
+  </Card>
+  <Card title="Eval" icon="flask-vial" href="/cli/eval">
+    Dynamic testing with 680 probes.
+  </Card>
+  <Card title="Fix" icon="wrench" href="/cli/fix">
+    Fix application and undo.
+  </Card>
+  <Card title="Agent" icon="id-card" href="/cli/agent">
+    Passport lifecycle management.
+  </Card>
+  <Card title="Daemon" icon="server" href="/cli/daemon">
+    Background daemon control.
+  </Card>
+  <Card title="Config" icon="gear" href="/cli/config">
+    Configuration files and .env setup.
+  </Card>
+</CardGroup>

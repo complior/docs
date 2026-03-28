@@ -1,0 +1,82 @@
+---
+title: "Changelog"
+description: "Release history and notable changes for Complior."
+---
+
+<Update label="v1.0.0" description="2026-03-28">
+  ## Initial public release
+
+  First stable release of the Complior open-source compliance platform.
+
+  **Scan Engine**
+  - 5-layer static analysis (L1–L4 deterministic + L5 LLM opt-in)
+  - 57+ AI framework detection (LangChain, CrewAI, OpenAI, Anthropic, Vercel AI, HuggingFace)
+  - 37 secret patterns (API keys, tokens, passwords)
+  - 33 code pattern rules across 8 compliance categories
+  - Cross-layer verification (7 consistency rules)
+  - SARIF v2.1.0 and JSON output
+
+  **Eval Engine**
+  - 680 dynamic probes across 6 categories (bias, transparency, security, conformity, accuracy, robustness)
+  - Deterministic + LLM-judged probe modes
+  - Custom request template support for any API format
+  - Adversarial red-team testing
+
+  **Agent Passport**
+  - 36-field standardized AI system identity card
+  - Mode 1 (Auto): 65–70% auto-filled from code analysis
+  - Ed25519 cryptographic signing
+  - Export: A2A, AIUC-1, NIST formats
+  - Evidence chain with SHA-256 hash linking
+
+  **Fix Engine**
+  - 18 remediation strategies (code, document, config)
+  - Preview with score impact prediction
+  - AI-assisted document generation (opt-in)
+  - Full undo capability
+
+  **CLI & TUI**
+  - 40+ headless commands
+  - 9-page interactive TUI dashboard
+  - Background daemon with file watcher (200ms compliance gate)
+  - 5 color themes
+
+  **SDK**
+  - `@complior/sdk` runtime compliance middleware
+  - 14 hooks (pre + post)
+  - 4 provider adapters (OpenAI, Anthropic, Google, Vercel AI)
+  - PII sanitization (50+ patterns, 6 categories)
+  - Prohibited practice detection (138 patterns)
+
+  **MCP Server**
+  - 8 MCP tools for AI agent integration
+  - Guard tools calling SDK hooks
+
+  **Compliance Coverage**
+  - 108 EU AI Act obligations mapped
+  - AIUC-1 (15 requirements)
+  - Multi-framework scoring (EU AI Act + AIUC-1)
+</Update>
+
+<Update label="v0.9.0-beta" description="2026-03-15">
+  ## Beta release
+
+  - S05 SDK Production complete (30/34 user stories)
+  - 1,691 tests passing (862 TS + 414 SDK + 415 Rust)
+  - Compliance diff feature
+  - Multi-agent awareness
+  - Cost estimator
+  - Industry-specific patterns (HR, finance, healthcare, education, legal)
+</Update>
+
+<Update label="v0.8.0-alpha" description="2026-03-01">
+  ## Alpha release
+
+  - S03–S04 daemon foundation complete
+  - Agent Passport Mode 1 (Auto)
+  - FRIA generator
+  - Evidence chain with ed25519 signatures
+  - `compliorAgent()` SDK wrapper
+  - Background daemon with PID management
+  - TUI Obligations page (108 obligations)
+</Update>

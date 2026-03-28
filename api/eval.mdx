@@ -1,0 +1,165 @@
+---
+title: "Eval Endpoints"
+sidebarTitle: "Eval"
+description: "Dynamic system evaluation — 680 probes for bias, transparency, security, and conformity testing."
+---
+
+<Info>
+  Eval endpoints test **live AI systems** via HTTP. Unlike scan (static code analysis), eval sends actual probes to your endpoint and evaluates the responses.
+</Info>
+
+## Run evaluation
+
+### `POST /eval/run`
+
+Run full evaluation suite. Returns results after all probes complete.
+
+**Request body:**
+
+```json
+{
+  "target": "http://localhost:8080/api/chat",
+  "det": true,
+  "llm": false,
+  "security": true,
+  "full": false,
+  "agent": "my-chatbot",
+  "categories": ["bias", "transparency", "security"],
+  "concurrency": 5,
+  "requestTemplate": {
+    "messages": [{ "role": "user", "content": "{{prompt}}" }]
+  },
+  "responsePath": "choices.0.message.content",
+  "headers": { "Authorization": "Bearer token" }
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `target` | string | required | Endpoint URL |
+| `det` | boolean | `false` | Deterministic probes only |
+| `llm` | boolean | `false` | Include LLM-judged probes |
+| `security` | boolean | `false` | Include security attack probes |
+| `full` | boolean | `false` | Run all probe categories |
+| `agent` | string | — | Filter by agent name |
+| `categories` | string[] | all | Specific categories |
+| `concurrency` | number | 5 | Parallel probes |
+| `requestTemplate` | object | — | Custom request format (`{{prompt}}` placeholder) |
+| `responsePath` | string | — | Dot-path to extract response text |
+| `headers` | object | — | Custom HTTP headers |
+
+**Response:** `EvalResult`
+
+```json
+{
+  "target": "http://localhost:8080/api/chat",
+  "total": 680,
+  "passed": 612,
+  "failed": 68,
+  "score": 90,
+  "categories": {
+    "bias": { "passed": 120, "failed": 5, "score": 96 },
+    "transparency": { "passed": 80, "failed": 12, "score": 87 },
+    "security": { "passed": 95, "failed": 30, "score": 76 }
+  },
+  "failures": [
+    {
+      "id": "bias-gender-001",
+      "category": "bias",
+      "probe": "Gender bias in hiring context",
+      "expected": "No gender preference",
+      "actual": "Response showed preference for male candidates",
+      "severity": "high"
+    }
+  ]
+}
+```
+
+---
+
+### `POST /eval/run/stream`
+
+Same parameters as `/eval/run`, but returns SSE stream with per-probe progress:
+
+```
+data: {"type":"probe_start","id":"bias-gender-001","category":"bias"}
+data: {"type":"probe_result","id":"bias-gender-001","passed":true,"elapsed":450}
+data: {"type":"category_complete","category":"bias","passed":120,"failed":5}
+data: {"type":"complete","score":90,"total":680}
+```
+
+---
+
+## Results
+
+### `GET /eval/last`
+
+Get the most recent evaluation result.
+
+### `GET /eval/list`
+
+List all saved evaluation results.
+
+```json
+{
+  "results": [
+    { "id": "eval-2026-03-28-1", "target": "...", "score": 90, "timestamp": "..." }
+  ],
+  "judgeConfigured": true
+}
+```
+
+### `GET /eval/findings`
+
+Convert eval failures into scanner-compatible findings for unified scoring.
+
+---
+
+## Remediation
+
+### `GET /eval/remediation`
+
+Get remediation suggestions for specific test failures.
+
+**Query:** `testIds=bias-gender-001,security-injection-003`
+
+### `POST /eval/remediation-report`
+
+Generate full remediation report across all eval failures with markdown output.
+
+---
+
+## Red-Team
+
+### `POST /redteam/run`
+
+Run adversarial red-team probes against an agent.
+
+```json
+{
+  "agentName": "my-chatbot",
+  "categories": ["injection", "jailbreak", "exfiltration"],
+  "maxProbes": 100
+}
+```
+
+### `GET /redteam/last`
+
+Get the most recent red-team report.
+
+---
+
+## Audit (Combined)
+
+### `POST /audit/run`
+
+Run combined scan + eval with weighted scoring (40% scan, 60% eval).
+
+```json
+{
+  "path": ".",
+  "target": "http://localhost:8080/api/chat",
+  "agent": "my-chatbot",
+  "full": true
+}
+```

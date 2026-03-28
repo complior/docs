@@ -1,0 +1,90 @@
+---
+title: "Configuration"
+sidebarTitle: "Config"
+description: "Configuration files, environment variables, and project setup."
+---
+
+## Project config (`.complior/`)
+
+Created by `complior init`. Contains all project-specific configuration.
+
+```
+.complior/
+├── project.toml           # TUI/CLI config (theme, layout)
+├── profile.json           # Engine config (domain, risk, frameworks)
+├── .env                   # LLM API keys (gitignored)
+├── agents/
+│   └── <name>-manifest.json   # Agent Passports (ed25519 signed)
+├── evidence/
+│   └── chain.json         # Tamper-proof evidence chain
+├── fria/
+│   └── <name>-fria-<ts>.md    # Generated FRIA documents
+├── reports/
+│   └── scan-report.json   # Latest scan results
+├── cache/
+│   └── ...                # Scan cache (speeds up re-scans)
+└── daemon.pid             # Daemon process info (auto-managed)
+```
+
+## Global config (`~/.config/complior/`)
+
+```
+~/.config/complior/
+├── settings.toml          # Global settings (theme, default provider)
+└── keys/
+    ├── private.pem        # ed25519 private key (auto-generated)
+    └── public.pem         # ed25519 public key
+```
+
+## project.toml
+
+```toml
+[project]
+name = "my-ai-project"
+jurisdiction = "DE"
+role = "provider"              # provider | deployer | both
+industry = "finance"
+risk_class = "high"            # minimal | limited | high | unacceptable
+
+[scan]
+include = ["src/**", "lib/**"]
+exclude = ["node_modules", "dist", "**/*.test.*"]
+max_files = 500
+
+[frameworks]
+selected = ["eu-ai-act", "aiuc-1"]
+```
+
+## Environment variables (`.complior/.env`)
+
+```bash
+# LLM provider for L5 deep analysis and AI-assisted fixes
+LLM_PROVIDER=anthropic        # anthropic | openai | openrouter
+LLM_MODEL=claude-sonnet-4-20250514
+LLM_API_KEY=sk-ant-...
+
+# SaaS sync (optional)
+COMPLIOR_SAAS_URL=https://app.complior.ai
+COMPLIOR_SAAS_TOKEN=cpl_...
+
+# Overrides
+COMPLIOR_PORT=3578             # Daemon HTTP port
+COMPLIOR_WATCH=1               # Enable file watcher
+COMPLIOR_OFFLINE=1             # Force offline mode
+```
+
+<Warning>
+  Never commit `.complior/.env` to git. It's automatically added to `.gitignore` by `complior init`.
+</Warning>
+
+## Config precedence
+
+Settings are resolved in order (last wins):
+
+1. Built-in defaults
+2. Global `~/.config/complior/settings.toml`
+3. Project `.complior/project.toml`
+4. Environment variables
+5. CLI flags
+
+Project-level config overrides global for: `llm_provider`, `llm_model`, `project_api_url`, `offline_mode`.

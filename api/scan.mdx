@@ -1,0 +1,153 @@
+---
+title: "Scan & Eval Endpoints"
+sidebarTitle: "Scan & Eval"
+description: "Static analysis, deep scan, diff, SBOM, and dynamic evaluation endpoints."
+---
+
+## Scan
+
+### `POST /scan`
+
+Run 5-layer static compliance analysis.
+
+**Request body:**
+
+```json
+{
+  "path": ".",
+  "saasToken": "optional-token",
+  "saasUrl": "https://app.complior.ai"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `path` | string | Yes | Project directory path |
+| `saasToken` | string | No | SaaS sync token (auto-push results) |
+| `saasUrl` | string | No | SaaS instance URL |
+
+**Response:** `ScanResult`
+
+```json
+{
+  "score": { "compliance": 72, "security": null },
+  "frameworks": {
+    "eu-ai-act": { "score": 72, "grade": "C" }
+  },
+  "findings": [...],
+  "agents": [...],
+  "layers": { "L1": "PASS", "L2": "WARN", "L3": "PASS", "L4": "WARN" },
+  "elapsed": 2100,
+  "regulationVersion": "1.0.0"
+}
+```
+
+---
+
+### `POST /scan/deep`
+
+L5 LLM-powered deep analysis for findings in the uncertain zone (50–80% confidence). Requires BYOK API key in `.complior/.env`.
+
+**Request body:** Same as `POST /scan`
+
+---
+
+### `POST /scan/diff`
+
+Compare compliance state against changed files. Useful for PR reviews.
+
+**Request body:**
+
+```json
+{
+  "path": ".",
+  "changedFiles": ["src/agent.ts", "package.json"],
+  "markdown": true
+}
+```
+
+**Response:** `ScanDiffResult` with `added`, `removed`, `changed` findings and score delta.
+
+---
+
+### `POST /scan/tier2`
+
+Run external tools (Semgrep, Bandit, ModelScan, detect-secrets) via uv. Requires `uv` installed.
+
+**Request body:** Same as `POST /scan`
+
+---
+
+### `GET /sbom`
+
+Generate Software Bill of Materials (CycloneDX 1.5 JSON).
+
+**Query params:** `path` (project directory)
+
+```bash
+curl "http://localhost:3578/sbom?path=."
+```
+
+---
+
+## Eval
+
+### `POST /eval/run`
+
+Run dynamic evaluation against a live endpoint. Blocking — returns full result.
+
+**Request body:**
+
+```json
+{
+  "target": "http://localhost:8080/api/chat",
+  "det": true,
+  "llm": false,
+  "security": true,
+  "agent": "my-chatbot",
+  "categories": ["bias", "transparency", "security"],
+  "concurrency": 5,
+  "requestTemplate": { "messages": [{ "role": "user", "content": "{{prompt}}" }] },
+  "responsePath": "choices.0.message.content"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target` | string | Yes | Endpoint URL to test |
+| `det` | boolean | No | Deterministic probes only (no LLM judge) |
+| `llm` | boolean | No | Include LLM-judged probes |
+| `security` | boolean | No | Include security attack probes |
+| `agent` | string | No | Filter by agent name |
+| `categories` | string[] | No | Probe categories to run |
+| `concurrency` | number | No | Parallel probe count (default: 5) |
+| `requestTemplate` | object | No | Custom request format |
+| `responsePath` | string | No | Dot-path to extract response text |
+
+**Response:** `EvalResult`
+
+---
+
+### `POST /eval/run/stream`
+
+Same as `/eval/run` but returns SSE stream with per-probe progress updates.
+
+---
+
+### `GET /eval/last`
+
+Get the most recent eval result.
+
+---
+
+### `GET /eval/findings`
+
+Convert eval failures into scanner-compatible findings for unified reporting.
+
+---
+
+### `GET /eval/remediation`
+
+Get remediation plan for specific test failures.
+
+**Query params:** `testIds` (comma-separated test IDs)

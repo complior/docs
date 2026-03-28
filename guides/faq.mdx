@@ -1,0 +1,67 @@
+---
+title: "FAQ"
+sidebarTitle: "FAQ"
+description: "Frequently asked questions about Complior."
+---
+
+<AccordionGroup>
+  <Accordion title="Does Complior send my code to the cloud?">
+    **No.** The base scan (L1–L4) runs entirely offline with zero network calls. L5 (LLM analysis) and eval are opt-in and only send specific findings or probes — never your full codebase. You control which LLM provider to use and supply your own API key.
+  </Accordion>
+
+  <Accordion title="Do I need an account to use Complior?">
+    **No.** The open-source CLI, TUI, SDK, and MCP server require no account. The optional SaaS dashboard (fleet management, team collaboration) requires a subscription.
+  </Accordion>
+
+  <Accordion title="What languages does Complior support?">
+    Scan works with **TypeScript/JavaScript, Python, Go, Rust, and Java**. The scanner detects 57+ AI frameworks across these languages. Eval works with any HTTP endpoint regardless of language.
+  </Accordion>
+
+  <Accordion title="Does the LLM make compliance decisions?">
+    **Never.** All compliance checks (L1–L4) are deterministic — AST patterns and rules. LLM (L5) only clarifies findings in the uncertain zone (50–80% confidence). The LLM cannot override, approve, or reject a compliance check.
+  </Accordion>
+
+  <Accordion title="Can I use Complior in CI/CD?">
+    **Yes.** Use `complior scan --ci --threshold 70 --fail-on critical` to gate deployments. Supports JSON and SARIF output for GitHub Code Scanning, GitLab, and other CI systems.
+  </Accordion>
+
+  <Accordion title="Is the EU AI Act relevant to me if I'm outside the EU?">
+    **Yes, if your users are in the EU.** The Act applies to providers and deployers whose AI systems affect EU residents, regardless of company location — similar to GDPR.
+  </Accordion>
+
+  <Accordion title="What's the difference between scan and eval?">
+    **Scan** = static code analysis (offline, 2–5 seconds). Examines your source code, configs, and docs.
+
+    **Eval** = dynamic system testing (online, sends 680 probes to a live endpoint). Tests actual AI behavior for bias, transparency, and security.
+
+    See [Scan vs Eval](/eval/eval-vs-scan) for a detailed comparison.
+  </Accordion>
+
+  <Accordion title="How is the compliance score calculated?">
+    The score (0–100) is a weighted combination across layers: L1 (1.0), L2 (0.95), L3 (0.90), L4 (0.75), L5 (0.70). Critical violations cap the maximum achievable score. See [Scoring](/scan/scoring) for details.
+  </Accordion>
+
+  <Accordion title="Can I customize which rules run?">
+    **Yes.** Use `project.toml` to configure scan scope, exclude files, and select frameworks. Use `--agent <NAME>` to scan specific AI systems only.
+  </Accordion>
+
+  <Accordion title="What is an Agent Passport?">
+    A standardized identity card for an AI system — 36 fields covering name, risk class, autonomy level, permissions, compliance status, and more. Ed25519 signed for tamper-proof integrity. See [Agent Passport](/passport/overview).
+  </Accordion>
+
+  <Accordion title="How do I integrate with Claude Code / Cursor / Windsurf?">
+    Complior exposes an MCP server with 8 tools. Your AI coding agent connects via MCP and can scan, fix, and query compliance status directly. See [MCP Server](/mcp/overview).
+  </Accordion>
+
+  <Accordion title="Is Complior free?">
+    The open-source CLI (daemon + TUI + SDK + MCP server) is **free and AGPLv3 licensed**. The SaaS dashboard for fleet management and team collaboration is paid (Growth €149/mo, Enterprise €499/mo).
+  </Accordion>
+
+  <Accordion title="What happens if I don't comply by August 2, 2026?">
+    Fines up to **€35M or 7% of global annual revenue** (whichever is higher) for prohibited practices, and up to **€15M or 3%** for other violations. National authorities enforce within each EU member state.
+  </Accordion>
+
+  <Accordion title="Can I export compliance data for auditors?">
+    **Yes.** `complior agent audit-package` creates a tar.gz bundle with passports, evidence chain, scan results, FRIA, and all compliance documents — ready for regulator review.
+  </Accordion>
+</AccordionGroup>

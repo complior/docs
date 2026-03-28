@@ -1,0 +1,119 @@
+---
+title: "complior agent"
+sidebarTitle: "agent"
+description: "Agent Passport lifecycle — init, list, show, validate, export, FRIA, evidence, and more."
+---
+
+```bash
+complior agent <subcommand> [flags]
+```
+
+## Subcommands
+
+### Passport lifecycle
+
+| Command | Description |
+|---------|-------------|
+| `agent init` | Auto-generate passports from codebase |
+| `agent list` | List all passports |
+| `agent show <name>` | Show specific passport |
+| `agent rename <old> <new>` | Rename a passport |
+| `agent validate [name]` | Validate schema + signature + completeness |
+| `agent completeness <name>` | Show completeness percentage |
+| `agent autonomy` | Analyze project autonomy level (L1–L5) |
+| `agent diff <name>` | Compare passport versions |
+
+### Documents
+
+| Command | Description |
+|---------|-------------|
+| `agent fria <name>` | Generate FRIA |
+| `agent notify <name>` | Generate Worker Notification |
+| `agent policy <name>` | Generate AI usage policy |
+
+### Evidence & Audit
+
+| Command | Description |
+|---------|-------------|
+| `agent evidence` | Show evidence chain |
+| `agent evidence --verify` | Verify chain integrity |
+| `agent audit` | Show audit trail |
+| `agent audit-package` | Export audit package (tar.gz) |
+
+### Export & Import
+
+| Command | Description |
+|---------|-------------|
+| `agent export <name>` | Export to A2A, AIUC-1, or NIST format |
+| `agent import --from a2a <file>` | Import from external format |
+
+### Registry & Permissions
+
+| Command | Description |
+|---------|-------------|
+| `agent registry` | Per-agent compliance dashboard |
+| `agent permissions` | Show permissions matrix |
+
+## Examples
+
+<Tabs>
+  <Tab title="Init">
+    ```bash
+    complior agent init
+    ```
+    ```
+    Discovered 3 AI agents:
+      ✓ customer-chatbot (OpenAI, Anthropic)
+      ✓ order-processor (LangChain)
+      ✓ content-moderator (HuggingFace)
+
+    Generated 3 Agent Passports in .complior/agents/
+    Completeness: 65-70% (auto-filled from code)
+    ```
+  </Tab>
+  <Tab title="List">
+    ```bash
+    complior agent list
+    ```
+    ```
+    AGENT                  RISK    SCORE  COMPLETENESS
+    customer-chatbot       high    72     68%
+    order-processor        high    65     72%
+    content-moderator      limited 81     75%
+    ```
+  </Tab>
+  <Tab title="Validate">
+    ```bash
+    complior agent validate --ci --strict
+    ```
+  </Tab>
+  <Tab title="FRIA">
+    ```bash
+    complior agent fria customer-chatbot \
+      --organization "Acme Corp" \
+      --impact "Medium impact on customer communication" \
+      --mitigation "Human oversight on all decisions"
+    ```
+  </Tab>
+  <Tab title="Export">
+    ```bash
+    complior agent export customer-chatbot --format a2a --json
+    ```
+  </Tab>
+  <Tab title="Audit package">
+    ```bash
+    complior agent audit-package -o ./audit-2026-03.tar.gz
+    ```
+  </Tab>
+</Tabs>
+
+## Common flags
+
+| Flag | Applicable to | Description |
+|------|--------------|-------------|
+| `--json` | all | JSON output |
+| `--verbose, -v` | list, validate | Show extra details |
+| `--ci` | validate | Exit code 0/1 |
+| `--strict` | validate | Fail on warnings too |
+| `--force` | init | Overwrite existing passports |
+| `[path]` | all | Project directory (default: `.`) |

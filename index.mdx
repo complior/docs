@@ -26,6 +26,23 @@ description: "Complior — open-source AI compliance platform for EU AI Act. Sca
   </Card>
 </CardGroup>
 
+## By the numbers
+
+<CardGroup cols={4}>
+  <Card title="108" icon="scale-balanced">
+    EU AI Act obligations mapped
+  </Card>
+  <Card title="57+" icon="microchip">
+    AI frameworks detected
+  </Card>
+  <Card title="680" icon="flask-vial">
+    Dynamic test probes
+  </Card>
+  <Card title="36" icon="id-card">
+    Passport fields
+  </Card>
+</CardGroup>
+
 ## What you get
 
 Every AI system in your project gets a complete compliance package:
@@ -42,7 +59,31 @@ Every AI system in your project gets a complete compliance package:
   </Card>
 </CardGroup>
 
-{/* PLACEHOLDER: Screenshot — TUI Dashboard showing score, agents, timeline. 1200×700px dark terminal theme */}
+## See it in action
+
+```bash
+$ complior scan
+
+◆ Complior v1.0.0  ·  EU AI Act Compliance Scanner
+────────────────────────────────────────────────────
+Scanning  acme-ai-support
+Files     57 collected
+Elapsed   82ms
+
+────────────────────────────────────────────────────
+COMPLIANCE SCORE                         33 / 100  F
+────────────────────────────────────────────────────
+
+Layer Results
+  L1    File Presence            FAIL   13 issues
+  L3    Dependencies             FAIL   3 issues
+  L4    Code Patterns            WARN   46 issues
+  NHI   Secrets                  FAIL   7 issues
+
+FINDINGS  (72 total · 6 critical · 8 high · 55 medium)
+
+Next: run `complior fix` to auto-remediate 29 findings
+```
 
 ## Get started
 
@@ -112,13 +153,33 @@ Every AI system in your project gets a complete compliance package:
   **Agent Passport** is the central data layer — it receives data from every step and feeds into documents, scoring, and certification.
 </Tip>
 
-## Next steps
+## New to AI compliance?
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
+  <Card title="Compliance 101" icon="graduation-cap" href="/guides/compliance-101">
+    EU AI Act explained in 5 minutes for developers.
+  </Card>
   <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
     4 commands from zero to audit-ready. Takes 3 minutes.
   </Card>
+  <Card title="FAQ" icon="circle-question" href="/guides/faq">
+    Common questions about Complior and compliance.
+  </Card>
+</CardGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
   <Card title="Installation" icon="download" href="/installation">
     npm, npx, or cargo — choose your install method.
+  </Card>
+  <Card title="CLI Reference" icon="terminal" href="/cli/commands">
+    40+ commands with flags and examples.
+  </Card>
+  <Card title="API Reference" icon="server" href="/api/overview">
+    100+ HTTP endpoints for programmatic access.
+  </Card>
+  <Card title="SDK" icon="puzzle-piece" href="/sdk/overview">
+    Runtime compliance middleware for LLM clients.
   </Card>
 </CardGroup>

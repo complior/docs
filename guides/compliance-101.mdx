@@ -1,0 +1,137 @@
+---
+title: "EU AI Act in 5 Minutes"
+sidebarTitle: "Compliance 101"
+description: "A developer's guide to the EU AI Act — what it is, who it affects, and what you need to do."
+---
+
+<Info>
+  **TL;DR:** If you build or deploy AI systems used in the EU, the EU AI Act applies to you. Enforcement starts **August 2, 2026**. Fines up to **€35M or 7% of global revenue**.
+</Info>
+
+## What is the EU AI Act?
+
+The EU AI Act is the world's first comprehensive AI regulation. It classifies AI systems by risk level and imposes obligations based on that classification. Think GDPR, but for AI.
+
+## Who does it affect?
+
+| Role | Definition | You if... |
+|------|-----------|-----------|
+| **Provider** | Develops or places AI system on the market | You build the AI product |
+| **Deployer** | Uses an AI system in professional activity | You integrate AI into your product |
+| **Both** | Common for startups using LLM APIs | You build AND deploy AI features |
+
+<Warning>
+  If your users are in the EU, the Act applies to you — regardless of where your company is based.
+</Warning>
+
+## Risk classification
+
+The Act classifies AI systems into 4 risk levels:
+
+<Steps>
+  <Step title="Unacceptable risk — BANNED">
+    Social scoring, real-time biometric surveillance, subliminal manipulation, exploitation of vulnerabilities. These practices are **prohibited** entirely.
+  </Step>
+  <Step title="High risk — HEAVY OBLIGATIONS">
+    AI in: hiring, credit scoring, education, healthcare, law enforcement, critical infrastructure. Requires FRIA, risk management, technical documentation, human oversight, accuracy testing, and EU Database registration.
+  </Step>
+  <Step title="Limited risk — TRANSPARENCY">
+    Chatbots, deepfakes, emotion recognition. Must **disclose** that users are interacting with AI. Must mark AI-generated content.
+  </Step>
+  <Step title="Minimal risk — NO OBLIGATIONS">
+    Spam filters, AI-powered search, recommendation engines. No specific obligations (but general best practices apply).
+  </Step>
+</Steps>
+
+## The 6 things you probably need to do
+
+Most AI developers fall into "High risk" or "Limited risk". Here's what that means:
+
+### 1. Disclose AI usage (everyone)
+
+```typescript
+// Before
+const response = await client.chat(message);
+
+// After — with @complior/sdk
+import { complior } from '@complior/sdk';
+const client = complior(new OpenAI(), { disclosure: true });
+```
+
+### 2. Create an Agent Passport
+
+```bash
+complior agent init
+```
+
+Auto-discovers your AI systems and generates a standardized identity card (36 fields, ed25519 signed).
+
+### 3. Run a compliance scan
+
+```bash
+complior scan
+```
+
+Analyzes your code against 108 obligations. Produces a score 0–100 with actionable findings.
+
+### 4. Generate FRIA (high-risk only)
+
+```bash
+complior agent fria my-chatbot --organization "Acme Corp"
+```
+
+Fundamental Rights Impact Assessment — required before deploying high-risk AI.
+
+### 5. Generate compliance documents
+
+```bash
+complior fix --ai
+```
+
+Auto-generates AI Policy, Worker Notification, Technical Documentation from your passport data.
+
+### 6. Build an evidence trail
+
+Every `complior` action automatically creates cryptographic evidence (SHA-256 + ed25519). This proves to regulators that you took compliance seriously.
+
+## Key deadlines
+
+| Date | What happens |
+|------|-------------|
+| **Feb 2, 2025** | Prohibited practices ban (already in effect) |
+| **Aug 2, 2025** | GPAI obligations begin |
+| **Aug 2, 2026** | **Full enforcement** — high-risk, limited-risk, all obligations |
+| **Aug 2, 2027** | Existing AI systems must comply |
+
+## Key articles for developers
+
+| Article | Topic | What it means |
+|---------|-------|---------------|
+| Art. 5 | Prohibited practices | Don't build social scoring, subliminal manipulation |
+| Art. 6 | High-risk classification | Check if your AI falls under Annex III |
+| Art. 9 | Risk management | Implement systematic risk identification |
+| Art. 13 | Transparency | Users must know they're talking to AI |
+| Art. 14 | Human oversight | Human can intervene and override AI |
+| Art. 15 | Accuracy & security | Test for bias, robustness, cybersecurity |
+| Art. 26 | Deployer obligations | Even if you didn't build the AI, you have duties |
+| Art. 50 | GPAI transparency | Disclose AI-generated content |
+
+## What Complior automates
+
+| Obligation | Manual effort | With Complior |
+|-----------|--------------|---------------|
+| Risk classification | Hours of legal analysis | `complior scan` (auto-detected) |
+| FRIA | Days of document writing | `complior agent fria` (pre-filled) |
+| AI disclosure | Code changes across codebase | `complior fix` (auto-wraps SDK) |
+| Technical documentation | Weeks of writing | `complior doc generate --all` |
+| Evidence trail | Manual logging | Automatic (every action logged) |
+| Ongoing monitoring | Manual review cycles | `complior daemon --watch` (real-time) |
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    Go from zero to compliant in 5 minutes.
+  </Card>
+  <Card title="EU AI Act deep dive" icon="scale-balanced" href="/standards/eu-ai-act">
+    Full article-by-article mapping.
+  </Card>
+</CardGroup>

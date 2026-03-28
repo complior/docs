@@ -1,0 +1,231 @@
+---
+title: "Agent & Passport Endpoints"
+sidebarTitle: "Agent & Passport"
+description: "Passport lifecycle, FRIA generation, evidence chain, export, audit trail, and document generation."
+---
+
+## Passport CRUD
+
+### `POST /agent/init`
+
+Auto-generate Agent Passport from codebase analysis.
+
+```json
+{
+  "path": ".",
+  "overrides": { "risk_class": "high" },
+  "force": false
+}
+```
+
+---
+
+### `GET /agent/list`
+
+List all passports in the project.
+
+```bash
+curl "http://localhost:3578/agent/list?path=."
+```
+
+**Response:** Array of `AgentPassport` objects (36 fields each).
+
+---
+
+### `GET /agent/show`
+
+Get a specific passport by name.
+
+```bash
+curl "http://localhost:3578/agent/show?path=.&name=my-chatbot"
+```
+
+---
+
+### `POST /agent/rename`
+
+```json
+{ "path": ".", "oldName": "agent-1", "newName": "customer-chatbot" }
+```
+
+---
+
+### `GET /agent/validate`
+
+Validate passport schema, ed25519 signature, and completeness.
+
+```bash
+curl "http://localhost:3578/agent/validate?path=.&name=my-chatbot"
+```
+
+---
+
+### `GET /agent/completeness`
+
+Get passport completeness percentage (0–100%).
+
+---
+
+### `GET /agent/autonomy`
+
+Analyze project autonomy level (L1–L5).
+
+---
+
+## Documents
+
+### `POST /agent/fria`
+
+Generate Fundamental Rights Impact Assessment.
+
+```json
+{
+  "path": ".",
+  "name": "my-chatbot",
+  "organization": "Acme Corp",
+  "assessor": "Jane Doe",
+  "impact": "Medium impact on customer communication",
+  "mitigation": "Human oversight on all decisions",
+  "approval": "CTO approval obtained"
+}
+```
+
+---
+
+### `POST /agent/notify`
+
+Generate Worker Notification (Art. 26(7)).
+
+```json
+{
+  "path": ".",
+  "name": "my-chatbot",
+  "companyName": "Acme Corp",
+  "contactName": "Jane Doe",
+  "contactEmail": "jane@acme.com",
+  "deploymentDate": "2026-06-01",
+  "affectedRoles": "Customer Support Agents",
+  "impactDescription": "AI assists with response drafting"
+}
+```
+
+---
+
+### `POST /agent/policy`
+
+Generate industry-specific AI usage policy.
+
+```json
+{
+  "path": ".",
+  "name": "my-chatbot",
+  "industry": "finance",
+  "organization": "Acme Bank",
+  "approver": "Chief Compliance Officer"
+}
+```
+
+Industries: `hr`, `finance`, `healthcare`, `education`, `legal`.
+
+---
+
+### `POST /agent/doc`
+
+Generate a single compliance document.
+
+```json
+{ "path": ".", "name": "my-chatbot", "docType": "fria", "organization": "Acme Corp" }
+```
+
+---
+
+### `POST /agent/doc/all`
+
+Generate ALL required compliance documents at once.
+
+---
+
+## Evidence & Audit
+
+### `GET /agent/evidence`
+
+Get evidence chain summary.
+
+---
+
+### `GET /agent/evidence/verify`
+
+Verify evidence chain integrity (hash chain + ed25519 signatures).
+
+```bash
+curl "http://localhost:3578/agent/evidence/verify?path=."
+```
+
+**Response:**
+
+```json
+{
+  "valid": true,
+  "entries": 47,
+  "firstEntry": "2026-03-15T10:00:00Z",
+  "lastEntry": "2026-03-28T14:30:00Z"
+}
+```
+
+---
+
+### `GET /agent/audit`
+
+Query audit trail.
+
+| Query param | Description |
+|-------------|-------------|
+| `agent` | Filter by agent name |
+| `since` | ISO timestamp (e.g., `2026-03-01`) |
+| `until` | ISO timestamp |
+| `type` | Event type filter |
+| `limit` | Max entries (default: 100) |
+
+---
+
+### `GET /agent/audit-package`
+
+Export audit-ready package as tar.gz (passports + evidence + scan results + documents).
+
+---
+
+## Export & Import
+
+### `GET /agent/export`
+
+Export passport to external format.
+
+```bash
+curl "http://localhost:3578/agent/export?path=.&name=my-chatbot&format=a2a"
+```
+
+Formats: `a2a` (Google A2A), `aiuc-1`, `nist`.
+
+---
+
+### `POST /agent/import`
+
+Import passport from external format.
+
+```json
+{ "format": "a2a", "data": { ... }, "path": "." }
+```
+
+---
+
+## Registry & Permissions
+
+### `GET /agent/registry`
+
+Per-agent compliance dashboard with scores, findings, and status.
+
+---
+
+### `GET /agent/permissions`
+
+Get permissions matrix for all agents — tools, data access, autonomy constraints.

@@ -1,0 +1,142 @@
+---
+title: "Fix Endpoints"
+sidebarTitle: "Fix"
+description: "Preview, apply, and undo compliance fixes. Batch operations with validation."
+---
+
+## Preview
+
+### `GET /fix/preview`
+
+Preview all available fixes without applying.
+
+```bash
+curl http://localhost:3578/fix/preview
+```
+
+**Response:**
+
+```json
+{
+  "fixes": [
+    {
+      "checkId": "no-disclosure",
+      "type": "code",
+      "strategy": "sdk-wrapper",
+      "description": "Wrap OpenAI client with @complior/sdk for automatic disclosure",
+      "file": "src/agent.ts",
+      "line": 12,
+      "diff": "- const client = new OpenAI()\n+ const client = complior(new OpenAI(), { disclosure: true })",
+      "importLine": "import { complior } from '@complior/sdk'",
+      "scoreImpact": "+8"
+    }
+  ],
+  "count": 29
+}
+```
+
+---
+
+### `POST /fix/preview`
+
+Preview fix for a specific finding.
+
+**Request body:**
+
+```json
+{
+  "checkId": "no-disclosure",
+  "obligationId": "OBL-050",
+  "useAi": false
+}
+```
+
+---
+
+## Apply
+
+### `POST /fix/apply`
+
+Apply a single fix.
+
+**Request body:**
+
+```json
+{
+  "checkId": "no-disclosure",
+  "obligationId": "OBL-050",
+  "useAi": false
+}
+```
+
+**Response:** `FixResult` with applied diff, new score, and evidence entry ID.
+
+---
+
+### `POST /fix/apply-and-validate`
+
+Apply fix and immediately re-scan to validate the result.
+
+**Request body:** Same as `/fix/apply`
+
+**Response:**
+
+```json
+{
+  "result": { "applied": true, "checkId": "no-disclosure" },
+  "validation": { "scoreBefore": 40, "scoreAfter": 48, "findingResolved": true }
+}
+```
+
+---
+
+### `POST /fix/apply-all`
+
+Batch apply all available fixes.
+
+**Request body:**
+
+```json
+{
+  "useAi": false,
+  "projectPath": "."
+}
+```
+
+**Response:**
+
+```json
+{
+  "results": [...],
+  "summary": { "applied": 29, "failed": 0, "skipped": 3 },
+  "unfixedFindings": [...]
+}
+```
+
+---
+
+## Undo
+
+### `POST /fix/undo`
+
+Revert a previously applied fix.
+
+**Request body:**
+
+```json
+{
+  "id": 5
+}
+```
+
+Omit `id` to undo the most recent fix.
+
+---
+
+### `GET /fix/history`
+
+List all applied fixes with timestamps, diffs, and undo availability.
+
+```bash
+curl http://localhost:3578/fix/history
+```

@@ -16,17 +16,16 @@ complior scan [path] [--deep] [--llm] [--cloud] [--ci] [--json] [--sarif]
   **Design principle:** LLM **never** makes compliance determinations. Layers L1–L4 are fully deterministic (AST + rules). Layer L5 (LLM) is opt-in and only clarifies findings in the uncertain zone (50–80% confidence).
 </Warning>
 
-{/* NAPKIN: Paste into napkin.ai —
-Complior Scan: 5-Layer Analysis Pipeline
+## The 5 layers
 
-Layer 1: File Presence (weight 1.00) — checks for README, LICENSE, .env, privacy policy. 14 checks.
-Layer 2: Document Structure (weight 0.95) — validates required sections, FRIA presence. 8 checks.
-Layer 3: Dependencies & Config (weight 0.90) — AI packages (45 frameworks), lockfile, licenses, CVEs. 12 checks.
-Layer 4: Code Patterns (weight 0.75) — 40+ AST patterns, SDK wrapper, disclosure, logging, secrets (37 patterns).
-Layer 5: LLM Deep Analysis (opt-in) — targeted analysis for uncertain findings. BYOK key required.
-Cross-Layer Verification — 7 consistency rules.
-Output: Compliance Score 0-100 + Security Score 0-100 across 6 frameworks.
-*/}
+| Layer | Weight | What it checks | Checks |
+|-------|--------|---------------|--------|
+| **L1** File Presence | 1.00 | README, LICENSE, .env, privacy policy, passport | 14 |
+| **L2** Document Structure | 0.95 | Required sections, FRIA presence, section depth | 8 |
+| **L3** Dependencies | 0.90 | AI packages (45 frameworks), lockfile, licenses, CVEs | 12 |
+| **L4** Code Patterns | 0.75 | 40+ AST patterns, SDK wrapper, disclosure, logging | 33 |
+| **L5** LLM Analysis | 0.70 | Targeted analysis for uncertain findings (opt-in, BYOK) | dynamic |
+| **Cross-Layer** | — | 7 consistency rules (doc-code mismatch, SDK without disclosure, etc.) | 7 |
 
 ## What gets scanned
 
@@ -40,8 +39,6 @@ Output: Compliance Score 0-100 + Security Score 0-100 across 6 frameworks.
 | **File Limit** | 500 files max, 1 MB each |
 
 ## Example output
-
-{/* TODO: Replace with GIF/screenshot showing colored terminal output */}
 
 ```
 ◆ Complior v1.0.0  ·  EU AI Act Compliance Scanner

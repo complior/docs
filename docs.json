@@ -23,6 +23,14 @@
   "appearance": {
     "default": "system"
   },
+  "styling": {
+    "eyebrows": "breadcrumbs"
+  },
+  "feedback": {
+    "thumbsRating": true,
+    "suggestEdit": true,
+    "raiseIssue": true
+  },
   "favicon": "/favicon.svg",
   "logo": {
     "light": "/logo/light.svg",
@@ -133,6 +141,84 @@
               "standards/eu-ai-act",
               "standards/iso-42001",
               "standards/frameworks"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/compliance-101",
+              "guides/faq",
+              "guides/troubleshooting",
+              "guides/glossary"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview"
+            ]
+          },
+          {
+            "group": "Scan & Eval",
+            "pages": [
+              "api/scan",
+              "api/eval"
+            ]
+          },
+          {
+            "group": "Fix & Remediation",
+            "pages": [
+              "api/fix"
+            ]
+          },
+          {
+            "group": "Agent & Passport",
+            "pages": [
+              "api/agent"
+            ]
+          },
+          {
+            "group": "System",
+            "pages": [
+              "api/status"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "cli/commands"
+            ]
+          },
+          {
+            "group": "Commands",
+            "pages": [
+              "cli/scan",
+              "cli/eval",
+              "cli/fix",
+              "cli/agent",
+              "cli/daemon",
+              "cli/config"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "Changelog",
+            "pages": [
+              "changelog"
             ]
           }
         ]

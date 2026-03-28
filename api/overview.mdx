@@ -1,0 +1,89 @@
+---
+title: "API Reference"
+sidebarTitle: "Overview"
+description: "Complior engine exposes a REST API on localhost for CLI, TUI, and MCP integrations. 100+ endpoints across scan, eval, fix, agent, and system operations."
+---
+
+The Complior engine runs as a background daemon and exposes an HTTP API on `localhost:3578`. All tools (CLI, TUI, MCP server) communicate with the engine through this API.
+
+<Info>
+  The API is **local-only** by default. No authentication required. The daemon binds to `127.0.0.1` and is not accessible from the network.
+</Info>
+
+## Base URL
+
+```
+http://localhost:3578
+```
+
+Override with `--port` when starting the daemon:
+
+```bash
+complior daemon start --port 4000
+```
+
+## Response format
+
+All endpoints return JSON. Errors follow a consistent format:
+
+```json
+{
+  "error": "Not found",
+  "status": 404,
+  "details": "No scan results available. Run `complior scan` first."
+}
+```
+
+## Endpoint groups
+
+<CardGroup cols={2}>
+  <Card title="Scan & Eval" icon="magnifying-glass" href="/api/scan">
+    Static analysis, deep scan, diff, SBOM generation, and dynamic evaluation with 680 probes.
+  </Card>
+  <Card title="Fix & Remediation" icon="wrench" href="/api/fix">
+    Preview, apply, undo fixes. Batch operations with validation.
+  </Card>
+  <Card title="Agent & Passport" icon="id-card" href="/api/agent">
+    Passport CRUD, FRIA generation, evidence chain, export, audit trail, and document generation.
+  </Card>
+  <Card title="System" icon="server" href="/api/status">
+    Engine status, SSE events, file operations, onboarding, badges, sharing, and sync.
+  </Card>
+</CardGroup>
+
+## SSE streaming
+
+Some endpoints return Server-Sent Events for real-time progress:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /events` | Global event stream (scan results, score updates, gate events) |
+| `POST /eval/run/stream` | Eval progress with per-probe updates |
+| `POST /chat` | LLM chat responses streamed token-by-token |
+
+## Quick examples
+
+<Tabs>
+  <Tab title="Scan">
+    ```bash
+    curl -X POST http://localhost:3578/scan \
+      -H "Content-Type: application/json" \
+      -d '{"path": "."}'
+    ```
+  </Tab>
+  <Tab title="Fix preview">
+    ```bash
+    curl http://localhost:3578/fix/preview
+    ```
+  </Tab>
+  <Tab title="List passports">
+    ```bash
+    curl "http://localhost:3578/agent/list?path=."
+    ```
+  </Tab>
+  <Tab title="Engine status">
+    ```bash
+    curl http://localhost:3578/status
+    ```
+  </Tab>
+</Tabs>

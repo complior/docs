@@ -1,0 +1,236 @@
+---
+title: "System Endpoints"
+sidebarTitle: "System"
+description: "Engine status, events, file operations, onboarding, badges, sharing, sync, and more."
+---
+
+## Status & Events
+
+### `GET /status`
+
+Get engine status.
+
+```bash
+curl http://localhost:3578/status
+```
+
+**Response:**
+
+```json
+{
+  "status": "running",
+  "version": "1.0.0",
+  "mode": "daemon",
+  "uptime": 3600,
+  "last_scan": "2026-03-28T14:00:00Z",
+  "agents_count": 3,
+  "total_findings": 42,
+  "compliance_score": 72
+}
+```
+
+---
+
+### `GET /events`
+
+Subscribe to Server-Sent Events stream.
+
+```bash
+curl -N http://localhost:3578/events
+```
+
+Event types: `scan.complete`, `score.update`, `gate.pass`, `gate.fail`, `fix.applied`, `agent.created`, `evidence.appended`.
+
+---
+
+## Onboarding
+
+### `GET /onboarding/status`
+
+Check if project has been onboarded.
+
+### `POST /onboarding/detect`
+
+Auto-detect project information (frameworks, languages, AI systems).
+
+### `GET /onboarding/questions`
+
+Get onboarding question blocks for interactive setup.
+
+### `POST /onboarding/complete`
+
+Submit onboarding answers to generate profile.
+
+### `POST /onboarding/guided/start`
+
+Start guided onboarding wizard (8 steps).
+
+### `GET /onboarding/guided/status`
+
+Get current guided onboarding progress.
+
+### `POST /onboarding/guided/step/:n`
+
+Execute step N of guided onboarding.
+
+---
+
+## Badges & Reports
+
+### `GET /badge`
+
+Get compliance badge as SVG image.
+
+```bash
+curl http://localhost:3578/badge > badge.svg
+```
+
+### `POST /badge/generate`
+
+Generate badge SVG + `COMPLIANCE.md` file.
+
+### `POST /report/pdf`
+
+Generate PDF compliance report.
+
+```json
+{ "organization": "Acme Corp", "jurisdiction": "DE", "isFree": true }
+```
+
+### `POST /report/markdown`
+
+Generate markdown compliance report.
+
+---
+
+## Sharing
+
+### `POST /share`
+
+Create a shareable compliance result.
+
+```json
+{
+  "jurisdiction": "DE",
+  "scanType": "standard",
+  "expirationDays": 30
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": "abc123",
+  "url": "https://app.complior.ai/share/abc123",
+  "expiresAt": "2026-04-28T00:00:00Z",
+  "score": 72,
+  "findingsCount": 42
+}
+```
+
+### `GET /share/:id`
+
+Get a shared result by ID.
+
+### `GET /shares`
+
+List all shared results.
+
+---
+
+## SaaS Sync
+
+### `POST /sync/passport`
+
+Push all passports to SaaS dashboard.
+
+### `POST /sync/scan`
+
+Push scan results to SaaS.
+
+### `POST /sync/documents`
+
+Push compliance documents to SaaS.
+
+### `POST /sync/evidence`
+
+Push evidence chain to SaaS.
+
+### `GET /sync/status`
+
+Check SaaS sync status and authentication.
+
+All sync endpoints require `token` and `saasUrl` in the request body.
+
+---
+
+## Frameworks & Scoring
+
+### `GET /frameworks`
+
+List available compliance frameworks.
+
+### `GET /frameworks/scores`
+
+Get scores for all selected frameworks (EU AI Act, AIUC-1, ISO 42001, etc.).
+
+### `GET /debt`
+
+Get compliance debt score with optional trend data.
+
+### `GET /cost-estimate`
+
+Estimate remediation cost in hours and euros.
+
+---
+
+## Jurisdictions
+
+### `GET /jurisdictions`
+
+List 30 EU/EEA jurisdictions with local authorities.
+
+### `GET /jurisdictions/:code`
+
+Get jurisdiction details (authority name, contact, language).
+
+---
+
+## Tools
+
+### `GET /tools/status`
+
+Check status of external tools (uv, Semgrep, Bandit, detect-secrets).
+
+### `POST /tools/update`
+
+Install or update external analysis tools.
+
+---
+
+## What-If & Simulation
+
+### `POST /whatif`
+
+Analyze hypothetical scenario.
+
+```json
+{
+  "type": "jurisdiction",
+  "params": { "from": "DE", "to": "FR" }
+}
+```
+
+Types: `jurisdiction`, `tool`, `risk_level`.
+
+### `POST /simulate`
+
+Batch compliance simulation — predict score impact of multiple actions.
+
+```json
+{
+  "actions": ["fix:no-disclosure", "fix:missing-fria", "doc:ai-policy"],
+  "passportCompleteness": 85
+}
+```

@@ -1,0 +1,80 @@
+---
+title: "complior eval"
+sidebarTitle: "eval"
+description: "Dynamic evaluation of live AI systems — 680 probes across bias, transparency, security, and conformity."
+---
+
+```bash
+complior eval <target> [flags]
+```
+
+## Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--det` | Deterministic probes only (no LLM judge) | off |
+| `--llm` | Include LLM-judged probes | off |
+| `--security` | Include security attack probes | off |
+| `--full` | Run all probe categories | off |
+| `--agent <NAME>` | Filter by agent name | — |
+| `--categories <CSV>` | Probe categories (comma-separated) | all |
+| `--json` | Output as JSON | off |
+| `--ci` | CI mode: exit code 0/1 | off |
+| `--threshold <N>` | Score threshold for CI | 70 |
+| `--model <MODEL>` | LLM model for judge probes | — |
+| `--api-key <KEY>` | LLM API key | — |
+| `--request-template <JSON>` | Custom request format | — |
+| `--response-path <PATH>` | Dot-path to extract response | — |
+| `--headers <JSON>` | Custom HTTP headers | — |
+| `-j, --concurrency <N>` | Parallel probes | 5 |
+| `-v, --verbose` | Show each probe result | off |
+| `--last` | Show last eval result | — |
+| `--failures` | Show only failures | — |
+| `--remediation` | Include remediation suggestions | off |
+| `--fix` | Apply fixes for eval failures | off |
+| `--dry-run` | Preview fixes without applying | off |
+| `--no-remediation` | Skip remediation output | off |
+
+## Examples
+
+<Tabs>
+  <Tab title="Deterministic">
+    ```bash
+    complior eval http://localhost:8080/api/chat --det
+    ```
+  </Tab>
+  <Tab title="Security">
+    ```bash
+    complior eval http://localhost:8080/api/chat --security --verbose
+    ```
+  </Tab>
+  <Tab title="Full suite">
+    ```bash
+    complior eval http://localhost:8080/api/chat --full --json
+    ```
+  </Tab>
+  <Tab title="CI pipeline">
+    ```bash
+    complior eval http://localhost:8080/api/chat --det --ci --threshold 80
+    ```
+  </Tab>
+  <Tab title="Custom format">
+    ```bash
+    complior eval http://localhost:8080/v1/chat/completions \
+      --request-template '{"messages":[{"role":"user","content":"{{prompt}}"}]}' \
+      --response-path 'choices.0.message.content' \
+      --headers '{"Authorization":"Bearer sk-..."}'
+    ```
+  </Tab>
+</Tabs>
+
+## Probe categories
+
+| Category | Probes | Description |
+|----------|--------|-------------|
+| `bias` | ~125 | Gender, racial, age, disability bias A/B testing |
+| `transparency` | ~95 | AI disclosure, explanation, limitations |
+| `security` | ~180 | Injection, jailbreak, exfiltration, DDoS patterns |
+| `conformity` | ~120 | EU AI Act article-specific conformity checks |
+| `accuracy` | ~80 | Hallucination, factuality, consistency |
+| `robustness` | ~80 | Edge cases, adversarial inputs, error handling |

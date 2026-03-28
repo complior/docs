@@ -1,0 +1,192 @@
+---
+title: "Troubleshooting"
+sidebarTitle: "Troubleshooting"
+description: "Common issues and solutions when using Complior."
+---
+
+## Installation issues
+
+<AccordionGroup>
+  <Accordion title="npx complior: command not found">
+    Ensure Node.js 18+ is installed:
+    ```bash
+    node --version  # should be >= 18
+    ```
+    Try installing globally:
+    ```bash
+    npm install -g complior
+    ```
+  </Accordion>
+
+  <Accordion title="Cargo build fails">
+    Ensure Rust 2024 edition toolchain:
+    ```bash
+    rustup update stable
+    cargo build --release
+    ```
+    If OpenSSL errors, install system deps:
+    ```bash
+    # Ubuntu/Debian
+    sudo apt install libssl-dev pkg-config
+    # macOS
+    brew install openssl
+    ```
+  </Accordion>
+
+  <Accordion title="Permission denied on install">
+    Avoid `sudo npm install -g`. Instead, configure npm prefix:
+    ```bash
+    mkdir -p ~/.npm-global
+    npm config set prefix '~/.npm-global'
+    export PATH="$HOME/.npm-global/bin:$PATH"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Daemon issues
+
+<AccordionGroup>
+  <Accordion title="Daemon won't start / port already in use">
+    Check for existing process:
+    ```bash
+    complior daemon status
+    ```
+    If stale, remove PID file and restart:
+    ```bash
+    rm .complior/daemon.pid
+    complior daemon start
+    ```
+    Or use a different port:
+    ```bash
+    complior daemon start --port 4000
+    ```
+  </Accordion>
+
+  <Accordion title="TUI shows 'Connection refused'">
+    The TUI couldn't reach the daemon. Check if it's running:
+    ```bash
+    complior daemon status
+    curl http://localhost:3578/status
+    ```
+    If not running, the TUI will auto-start it. If it still fails, check the engine log:
+    ```bash
+    cat engine/core/engine.log
+    ```
+  </Accordion>
+
+  <Accordion title="Daemon stops unexpectedly">
+    Check system resources — the TypeScript engine needs ~200MB RAM. Review the engine log for errors:
+    ```bash
+    cat engine/core/engine.log | tail -50
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Scan issues
+
+<AccordionGroup>
+  <Accordion title="Score is 0 or very low on a new project">
+    This is expected for projects without compliance artifacts. Run the fix command to generate documents and wrap SDK:
+    ```bash
+    complior fix --dry-run  # preview first
+    complior fix            # apply
+    ```
+  </Accordion>
+
+  <Accordion title="Scan takes too long">
+    Default limit is 500 files. Large monorepos can be slow. Narrow scope in `project.toml`:
+    ```toml
+    [scan]
+    include = ["src/**"]
+    exclude = ["node_modules", "dist", "vendor"]
+    max_files = 300
+    ```
+  </Accordion>
+
+  <Accordion title="False positive findings">
+    Report via GitHub Issues. Workaround — exclude the file:
+    ```toml
+    [scan]
+    exclude = ["path/to/false-positive.ts"]
+    ```
+  </Accordion>
+
+  <Accordion title="Deep scan (--deep) fails">
+    Tier 2 requires `uv` (Python tool installer):
+    ```bash
+    # Install uv
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Check tools
+    complior tools status
+    complior tools update
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## LLM issues
+
+<AccordionGroup>
+  <Accordion title="L5/AI features not working">
+    Check `.complior/.env` has valid credentials:
+    ```bash
+    cat .complior/.env
+    ```
+    Required fields:
+    ```
+    LLM_PROVIDER=anthropic
+    LLM_MODEL=claude-sonnet-4-20250514
+    LLM_API_KEY=sk-ant-...
+    ```
+    Verify the key:
+    ```bash
+    complior doctor
+    ```
+  </Accordion>
+
+  <Accordion title="Rate limiting during eval">
+    Reduce concurrency:
+    ```bash
+    complior eval http://localhost:8080/api -j 2
+    ```
+    Default is 5 parallel probes. For rate-limited APIs, use 1–2.
+  </Accordion>
+</AccordionGroup>
+
+## SDK issues
+
+<AccordionGroup>
+  <Accordion title="@complior/sdk TypeScript types not resolving">
+    Ensure you have the latest version:
+    ```bash
+    npm install @complior/sdk@latest
+    ```
+    Check `tsconfig.json` includes `"moduleResolution": "bundler"` or `"node16"`.
+  </Accordion>
+
+  <Accordion title="SDK hooks not firing">
+    Verify the wrapper is applied correctly:
+    ```typescript
+    import { complior } from '@complior/sdk';
+    import OpenAI from 'openai';
+
+    // Correct — wraps the client
+    const client = complior(new OpenAI(), { disclosure: true });
+
+    // Wrong — complior must wrap the constructor result
+    const client = new OpenAI();
+    complior(client); // This doesn't capture the proxy
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Still stuck?
+
+<CardGroup cols={2}>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/complior/complior/issues">
+    Report bugs and request features.
+  </Card>
+  <Card title="System diagnostics" icon="stethoscope">
+    Run `complior doctor` to check your environment.
+  </Card>
+</CardGroup>

@@ -1,0 +1,81 @@
+---
+title: "complior fix"
+sidebarTitle: "fix"
+description: "Auto-remediate compliance findings — preview, apply, and undo fixes."
+---
+
+```bash
+complior fix [path] [flags]
+```
+
+## Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--dry-run` | Preview fixes without applying | off |
+| `--json` | Output as JSON | off |
+| `--ai` | Use LLM to fill document placeholders | off |
+| `--source <SOURCE>` | Fix source: `scan` or `eval` | scan |
+
+## Examples
+
+<Tabs>
+  <Tab title="Preview">
+    ```bash
+    complior fix --dry-run
+    ```
+    ```
+    Dry-Run Fix Analysis (offline estimate)
+    Fixable: 29 findings
+    Predicted: 40 -> 72 (+32)
+
+    Type A (Code Fixes):
+      - no-disclosure: Wrap OpenAI client with @complior/sdk  [+8]
+      - no-logging: Add audit logging middleware              [+5]
+      - hardcoded-key: Move API key to .env                   [+3]
+
+    Type B (Document Generation):
+      - missing-fria: Generate FRIA template                  [+6]
+      - missing-policy: Generate AI usage policy              [+4]
+
+    Type C (Config):
+      - missing-gitignore: Add .env to .gitignore             [+2]
+    ```
+  </Tab>
+  <Tab title="Apply all">
+    ```bash
+    complior fix
+    ```
+  </Tab>
+  <Tab title="With AI">
+    ```bash
+    complior fix --ai
+    ```
+  </Tab>
+  <Tab title="From eval">
+    ```bash
+    complior fix --source eval
+    ```
+  </Tab>
+</Tabs>
+
+## Fix types
+
+| Type | What it does | Example |
+|------|-------------|---------|
+| **A (Code)** | Modifies source files — adds imports, wraps constructors | SDK wrapper, logging, disclosure |
+| **B (Document)** | Creates new files — compliance documents, policies | FRIA, AI Policy, Worker Notification |
+| **C (Config)** | Updates configuration — .gitignore, .env, package.json | Secret externalization, dependency updates |
+
+## Undo
+
+Fixes are recorded in the evidence chain. To undo the last fix:
+
+```bash
+# In TUI: press U on the Fix page
+# Via API: POST /fix/undo
+```
+
+<Warning>
+  Document generation (Type B) creates new files. Undo deletes those files. Code fixes (Type A) are reverted to the original content.
+</Warning>

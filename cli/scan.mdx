@@ -1,0 +1,81 @@
+---
+title: "complior scan"
+sidebarTitle: "scan"
+description: "5-layer static compliance analysis with multiple output formats and CI integration."
+---
+
+```bash
+complior scan [path] [flags]
+```
+
+## Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--deep` | Tier 2: external tools (Semgrep, Bandit, ModelScan) | off |
+| `--llm` | L5: LLM deep analysis (requires BYOK key) | off |
+| `--cloud` | Tier 3: cloud SBOM + PII + vendor assessment | off |
+| `--ci` | CI mode: exit code 0/1 based on threshold | off |
+| `--json` | Output as JSON | off |
+| `--sarif` | Output as SARIF v2.1.0 | off |
+| `--threshold <N>` | Score threshold for CI pass | 50 |
+| `--fail-on <SEV>` | Fail on severity: `critical`, `high`, `medium`, `low` | — |
+| `--diff <BRANCH>` | Compare against base branch | — |
+| `--fail-on-regression` | Exit 1 on score regression or new critical findings | off |
+| `--comment` | Post diff as PR comment (requires `gh` CLI) | off |
+| `-q, --quiet` | Show only critical findings and score | off |
+| `--agent <NAME>` | Filter scan by agent name | all |
+| `--no-tui` | Force headless output | auto |
+
+## Examples
+
+<Tabs>
+  <Tab title="Basic scan">
+    ```bash
+    complior scan
+    ```
+  </Tab>
+  <Tab title="CI pipeline">
+    ```bash
+    complior scan --ci --threshold 70 --fail-on critical --json
+    ```
+  </Tab>
+  <Tab title="PR diff">
+    ```bash
+    complior scan --diff main --fail-on-regression --comment
+    ```
+  </Tab>
+  <Tab title="Deep scan">
+    ```bash
+    complior scan --deep --llm
+    ```
+  </Tab>
+</Tabs>
+
+## GitHub Actions
+
+```yaml
+- name: Compliance scan
+  run: |
+    npx complior scan --ci --threshold 70 --fail-on critical --sarif > results.sarif
+
+- name: Upload SARIF
+  uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: results.sarif
+```
+
+## Output formats
+
+| Format | Flag | Use case |
+|--------|------|----------|
+| Terminal | (default) | Human-readable with colors |
+| JSON | `--json` | Programmatic processing, CI/CD |
+| SARIF | `--sarif` | GitHub Code Scanning, VS Code |
+
+## Exit codes (CI mode)
+
+| Code | Meaning |
+|------|---------|
+| 0 | Score >= threshold, no critical findings |
+| 1 | Score < threshold or critical finding detected |
