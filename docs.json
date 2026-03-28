@@ -144,11 +144,6 @@
           "anchor": "GitHub",
           "href": "https://github.com/complior/complior",
           "icon": "github"
-        },
-        {
-          "anchor": "Community",
-          "href": "https://discord.gg/complior",
-          "icon": "discord"
         }
       ]
     }
