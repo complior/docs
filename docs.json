@@ -124,8 +124,16 @@
             "pages": [
               "sdk/overview",
               "sdk/quick-start",
+              "sdk/configuration",
               "sdk/hooks",
-              "sdk/providers"
+              "sdk/providers",
+              "sdk/errors",
+              "sdk/pii-detection",
+              "sdk/bias-detection",
+              "sdk/safety",
+              "sdk/agent-mode",
+              "sdk/middleware",
+              "sdk/advanced"
             ]
           },
           {

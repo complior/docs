@@ -30,9 +30,9 @@ complior fix [path] [flags]
     Predicted: 40 -> 72 (+32)
 
     Type A (Code Fixes):
-      - no-disclosure: Wrap OpenAI client with @complior/sdk  [+8]
-      - no-logging: Add audit logging middleware              [+5]
-      - hardcoded-key: Move API key to .env                   [+3]
+      - no-disclosure: Add AI disclosure system message        [+5]
+      - no-logging: Add audit logging middleware               [+5]
+      - hardcoded-key: Move API key to .env                    [+3]
 
     Type B (Document Generation):
       - missing-fria: Generate FRIA template                  [+6]
@@ -63,7 +63,7 @@ complior fix [path] [flags]
 
 | Type | What it does | Example |
 |------|-------------|---------|
-| **A (Code)** | Modifies source files — adds imports, wraps constructors | SDK wrapper, logging, disclosure |
+| **A (Code)** | Modifies source files — adds imports, injects compliance code | Disclosure, logging, error handling |
 | **B (Document)** | Creates new files — compliance documents, policies | FRIA, AI Policy, Worker Notification |
 | **C (Config)** | Updates configuration — .gitignore, .env, package.json | Secret externalization, dependency updates |
 

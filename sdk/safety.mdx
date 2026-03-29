@@ -1,0 +1,179 @@
+---
+title: "Safety Filter & HITL Gate"
+sidebarTitle: "Safety & HITL"
+description: "5-category safety pattern scanning and Human-in-the-Loop gate with 4 built-in rules (Art.14/Art.15)."
+---
+
+Two complementary safety mechanisms: the **safety filter** scans LLM responses for harmful content (Art.15), and the **HITL gate** requires human approval for critical actions (Art.14).
+
+## Safety Filter
+
+The safety filter is a post-hook that scans LLM responses against pattern-based rules across 5 categories.
+
+### Categories
+
+| Category | Patterns | Severity Range | Description |
+|----------|----------|----------------|-------------|
+| `violence` | 4 | HIGH–CRITICAL | Lethal violence instructions, weapon construction, attack planning |
+| `self_harm` | 3 | HIGH–CRITICAL | Self-harm instructions, self-injury encouragement |
+| `illegal_instructions` | 4 | MEDIUM–CRITICAL | Hacking, drug manufacturing, counterfeiting, law evasion |
+| `pii_leakage` | 4 | MEDIUM–HIGH | SSN/credit card/IBAN numbers and credentials in output |
+| `hallucination_indicator` | 4 | LOW–MEDIUM | False memory claims, unverifiable citations, unverified legal claims |
+
+### Severity Weights
+
+| Severity | Weight |
+|----------|--------|
+| `LOW` | 0.1 |
+| `MEDIUM` | 0.3 |
+| `HIGH` | 0.6 |
+| `CRITICAL` | 1.0 |
+
+### Configuration
+
+```typescript
+import { complior } from '@complior/sdk';
+import OpenAI from 'openai';
+
+const client = complior(new OpenAI(), {
+  safetyFilter: true,
+  safetyMode: 'block',      // 'block' | 'warn' | 'log'
+  safetyThreshold: 0.5,     // 0–1, lower = stricter
+});
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `safetyFilter` | `boolean` | `false` | Enable safety scanning |
+| `safetyMode` | `'block' \| 'warn' \| 'log'` | `'block'` | Action on threshold exceeded |
+| `safetyThreshold` | `number` | `0.5` | Aggregate score threshold |
+
+- **`block`** — throws `SafetyViolationError`
+- **`warn`** — adds findings to response metadata, does not throw
+- **`log`** — logs findings, no metadata or throw
+
+### SafetyFinding
+
+```typescript
+interface SafetyFinding {
+  readonly category: string;  // e.g., 'violence', 'self_harm'
+  readonly severity: string;  // 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  readonly evidence: string;  // Matched text
+  readonly score: number;     // Pattern weight
+}
+```
+
+---
+
+## Human-in-the-Loop Gate
+
+The HITL gate is a post-hook that pauses execution when LLM output matches critical action patterns. A human operator must approve or deny before the response is returned.
+
+<Warning>
+If no `onGateTriggered` callback is configured, the gate **auto-denies** all matches (fail-safe per Art.14). Always provide a callback in production.
+</Warning>
+
+### Built-in Rules
+
+4 default rules cover the most critical action categories:
+
+| Rule ID | Category | Pattern | Example Match |
+|---------|----------|---------|---------------|
+| `financial` | Financial transaction | Transfer/send/pay + amount | "transfer $5,000 to account" |
+| `data_deletion` | Data deletion | Delete/drop/purge + data | "delete all user records" |
+| `permission_change` | Permission change | Grant/revoke + access/role | "grant admin access to user" |
+| `safety_critical` | Safety-critical system | Deploy/shutdown + production | "deploy to production system" |
+
+### Configuration
+
+```typescript
+import { complior } from '@complior/sdk';
+import type { GateRequest, GateDecision } from '@complior/sdk';
+import OpenAI from 'openai';
+
+const client = complior(new OpenAI(), {
+  hitlGate: true,
+  hitlGateTimeoutMs: 60_000, // 1 minute (default: 5 minutes)
+  onGateTriggered: async (request: GateRequest): Promise<GateDecision> => {
+    console.log(`Action detected: ${request.rule.description}`);
+    console.log(`Matched text: "${request.matchedText}"`);
+    console.log(`Provider: ${request.provider}, Method: ${request.method}`);
+
+    const approved = await promptHumanOperator(request);
+    return approved
+      ? { approved: true }
+      : { approved: false, reason: 'Operator rejected the action' };
+  },
+});
+```
+
+### Custom Rules
+
+Override built-in rules with `hitlGateRules`:
+
+```typescript
+import type { GateRule } from '@complior/sdk';
+
+const customRules: GateRule[] = [
+  {
+    id: 'pii_export',
+    description: 'PII data export',
+    pattern: /\b(export|download|extract)\b.*\b(personal data|PII|user data|customer data)\b/i,
+    category: 'data_export',
+  },
+  {
+    id: 'model_deployment',
+    description: 'ML model deployment',
+    pattern: /\b(deploy|publish|release)\b.*\b(model|checkpoint|weights)\b/i,
+    category: 'model_ops',
+  },
+];
+
+const client = complior(new OpenAI(), {
+  hitlGate: true,
+  hitlGateRules: customRules,
+  onGateTriggered: async (req) => {
+    // Your approval logic
+    return { approved: true };
+  },
+});
+```
+
+### Types
+
+```typescript
+interface GateRule {
+  readonly id: string;
+  readonly description: string;
+  readonly pattern: RegExp;
+  readonly category: string;
+}
+
+interface GateRequest {
+  readonly rule: GateRule;
+  readonly matchedText: string;
+  readonly provider: string;
+  readonly method: string;
+  readonly timestamp: number;
+}
+
+type GateDecision =
+  | { approved: true }
+  | { approved: false; reason?: string };
+```
+
+### Timeout Behavior
+
+- Default timeout: **5 minutes** (`300000` ms)
+- On timeout: throws `HumanGateDeniedError` with `reason: 'timeout'`
+- On denial: throws `HumanGateDeniedError` with `reason: 'denied'`
+- On approval: response passes through with `hitlGateTriggered: true` in metadata
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/sdk/errors">
+    `SafetyViolationError` and `HumanGateDeniedError` reference.
+  </Card>
+  <Card title="Agent Mode" icon="robot" href="/sdk/agent-mode">
+    Circuit breaker for cascading agent failures.
+  </Card>
+</CardGroup>

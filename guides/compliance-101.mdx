@@ -49,11 +49,16 @@ Most AI developers fall into "High risk" or "Limited risk". Here's what that mea
 
 ### 1. Disclose AI usage (everyone)
 
-```typescript
-// Before
-const response = await client.chat(message);
+Your AI system must inform users they are interacting with AI. Complior detects missing disclosure and generates the fix:
 
-// After — with @complior/sdk
+```bash
+complior scan   # Detects: "No AI disclosure found"
+complior fix    # Adds disclosure system message to your code
+```
+
+Optionally, use `@complior/sdk` for runtime enforcement:
+
+```typescript
 import { complior } from '@complior/sdk';
 const client = complior(new OpenAI(), { disclosure: true });
 ```
@@ -122,7 +127,7 @@ Every `complior` action automatically creates cryptographic evidence (SHA-256 + 
 |-----------|--------------|---------------|
 | Risk classification | Hours of legal analysis | `complior scan` (auto-detected) |
 | FRIA | Days of document writing | `complior agent fria` (pre-filled) |
-| AI disclosure | Code changes across codebase | `complior fix` (auto-wraps SDK) |
+| AI disclosure | Code changes across codebase | `complior fix` (auto-injects disclosure) |
 | Technical documentation | Weeks of writing | `complior doc generate --all` |
 | Evidence trail | Manual logging | Automatic (every action logged) |
 | Ongoing monitoring | Manual review cycles | `complior daemon --watch` (real-time) |

@@ -22,16 +22,15 @@ curl http://localhost:3578/fix/preview
     {
       "checkId": "no-disclosure",
       "type": "code",
-      "strategy": "sdk-wrapper",
-      "description": "Wrap OpenAI client with @complior/sdk for automatic disclosure",
+      "strategy": "disclosure-inject",
+      "description": "Add AI disclosure system message for Art.50 transparency",
       "file": "src/agent.ts",
       "line": 12,
-      "diff": "- const client = new OpenAI()\n+ const client = complior(new OpenAI(), { disclosure: true })",
-      "importLine": "import { complior } from '@complior/sdk'",
-      "scoreImpact": "+8"
+      "diff": "  messages: [\n+   { role: 'system', content: 'You are an AI assistant. Users must be informed they are interacting with AI per EU AI Act Art.50.' },\n    { role: 'user', content: userInput }",
+      "scoreImpact": "+5"
     }
   ],
-  "count": 29
+  "count": 24
 }
 ```
 

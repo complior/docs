@@ -1,0 +1,150 @@
+---
+title: "PII Detection & Redaction"
+sidebarTitle: "PII Detection"
+description: "50+ PII types across 6 categories with checksum validators. EU-focused: IBAN, BSN, NIR, PESEL, Codice Fiscale, and GDPR Art.9 special categories."
+---
+
+The sanitize pre-hook scans input text for personally identifiable information (PII). It supports 50+ pattern types, 5 checksum validators, and 6 categories — with a focus on EU member state identifiers.
+
+## Three Modes
+
+```typescript
+import { complior } from '@complior/sdk';
+import OpenAI from 'openai';
+
+// Mode 1: Replace (default) — redact PII with labels
+const client = complior(new OpenAI(), { sanitizeMode: 'replace' });
+// Input:  "My SSN is 123-45-6789"
+// Passed: "My SSN is [PII:SSN]"
+
+// Mode 2: Block — throw PIIDetectedError on first match
+const client = complior(new OpenAI(), { sanitizeMode: 'block' });
+
+// Mode 3: Warn — pass through, add metadata only
+const client = complior(new OpenAI(), { sanitizeMode: 'warn' });
+```
+
+## Categories & Types
+
+### National IDs (`identity_national`)
+
+8 EU/US national identification numbers.
+
+| Type | Country | Pattern | Validator | Redaction Label |
+|------|---------|---------|-----------|-----------------|
+| `SSN` | US | `\d{3}-\d{2}-\d{4}` | — | `[PII:SSN]` |
+| `BSN` | NL | `\d{9}` | 11-check | `[PII:BSN]` |
+| `NIR` | FR | `[12] dd dd dd ddd ddd dd` | mod-97 | `[PII:NIR]` |
+| `PESEL` | PL | `\d{11}` | Weighted checksum | `[PII:PESEL]` |
+| `CODICE_FISCALE` | IT | `[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]` | Check character | `[PII:CODICE_FISCALE]` |
+| `PERSONALAUSWEIS` | DE | `[CFGHJKLMNPRTVWXYZ0-9]{9}\d` | — | `[PII:PERSONALAUSWEIS]` |
+| `DNI` | ES | `\d{8}[A-Z]` | — | `[PII:DNI]` |
+| `NIF` | PT | `\d{9}[A-Z]{2}` | — | `[PII:NIF]` |
+
+### Passports (`identity_passport`)
+
+14 EU country formats + generic international passport pattern.
+
+| Types | Countries |
+|-------|-----------|
+| `PASSPORT_DE` | Germany |
+| `PASSPORT_FR` | France |
+| `PASSPORT_NL` | Netherlands |
+| `PASSPORT_PL` | Poland |
+| `PASSPORT_IT` | Italy |
+| `PASSPORT_ES` | Spain |
+| `PASSPORT_PT` | Portugal |
+| `PASSPORT_BE` | Belgium |
+| `PASSPORT_AT` | Austria |
+| `PASSPORT_SE` | Sweden |
+| `PASSPORT_DK` | Denmark |
+| `PASSPORT_FI` | Finland |
+| `PASSPORT_IE` | Ireland |
+| `PASSPORT_CZ` | Czech Republic |
+| `PASSPORT_GENERIC` | International |
+
+### Financial (`financial`)
+
+| Type | Description | Validator | Article |
+|------|-------------|-----------|---------|
+| `IBAN` | International Bank Account Number (ISO 13616) | mod-97 | GDPR Art.6 |
+| `CREDIT_CARD` | Card numbers (spaced and contiguous) | — | GDPR Art.6 |
+| `SWIFT_BIC` | SWIFT/BIC bank codes | — | GDPR Art.6 |
+
+### Contact (`contact`)
+
+| Type | Description | Article |
+|------|-------------|---------|
+| `EMAIL` | Email addresses | GDPR Art.6 |
+| `PHONE` | International + EU domestic phone numbers | GDPR Art.6 |
+| `IP_ADDRESS` | IPv4 and IPv6 addresses | GDPR Recital 30 |
+
+### Medical (`medical`)
+
+| Type | Country | Description | Article |
+|------|---------|-------------|---------|
+| `EHIC` | EU | European Health Insurance Card | GDPR Art.9(2)(h) |
+| `HEALTH_ID_DE` | DE | Krankenversichertennummer (KVNR) | GDPR Art.9(2)(h) |
+| `HEALTH_ID_FR` | FR | Carte Vitale (NIR-based, with mod-97) | GDPR Art.9(2)(h) |
+| `HEALTH_ID_UK` | UK | NHS number | GDPR Art.9(2)(h) |
+
+### GDPR Art.9 Special Categories (`gdpr_art9`)
+
+8 context-dependent patterns for special category data. These use keyword context matching — a pattern must appear alongside relevant context keywords to trigger.
+
+| Type | Category | Context Keywords |
+|------|----------|------------------|
+| `ART9_RACIAL` | Racial/ethnic origin | race, ethnicity, heritage, nationality |
+| `ART9_POLITICAL` | Political opinions | political, party, vote, election, ideology |
+| `ART9_RELIGIOUS` | Religious beliefs | religion, faith, church, mosque, temple |
+| `ART9_TRADE_UNION` | Trade union membership | union, labor, collective bargaining |
+| `ART9_GENETIC` | Genetic data | DNA, genome, gene, hereditary |
+| `ART9_BIOMETRIC` | Biometric data | fingerprint, facial recognition, iris |
+| `ART9_HEALTH` | Health data | medical, diagnosis, patient, treatment |
+| `ART9_SEXUAL` | Sexual orientation | orientation, gender identity, LGBTQ |
+
+## Checksum Validators
+
+Five types use algorithmic validation to reduce false positives:
+
+| Validator | Algorithm | Used By |
+|-----------|-----------|---------|
+| IBAN | ISO 7064 mod-97 | `IBAN` |
+| BSN | 11-proof (Dutch) | `BSN` |
+| NIR | mod-97 key check | `NIR`, `HEALTH_ID_FR` |
+| PESEL | Weighted digit sum | `PESEL` |
+| Codice Fiscale | Check character lookup | `CODICE_FISCALE` |
+
+## Pattern Priority
+
+Patterns are ordered for matching priority — specific patterns with validators run first, generic patterns last:
+
+<Steps>
+  <Step title="National IDs">
+    Most specific: SSN, BSN (with 11-check), NIR (with mod-97), PESEL, Codice Fiscale
+  </Step>
+  <Step title="Financial">
+    IBAN (with mod-97), credit cards, SWIFT/BIC
+  </Step>
+  <Step title="Medical">
+    EHIC, KVNR, Carte Vitale, NHS
+  </Step>
+  <Step title="GDPR Art.9">
+    Context-dependent special categories
+  </Step>
+  <Step title="Contact">
+    Generic: email, phone, IP addresses
+  </Step>
+  <Step title="Passports">
+    Most generic: country-specific and generic passport formats
+  </Step>
+</Steps>
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="sliders" href="/sdk/configuration">
+    Set `sanitizeMode` and other options.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/sdk/errors">
+    `PIIDetectedError` reference.
+  </Card>
+</CardGroup>

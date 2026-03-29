@@ -23,9 +23,9 @@ complior scan [path] [--deep] [--llm] [--cloud] [--ci] [--json] [--sarif]
 | **L1** File Presence | 1.00 | README, LICENSE, .env, privacy policy, passport | 14 |
 | **L2** Document Structure | 0.95 | Required sections, FRIA presence, section depth | 8 |
 | **L3** Dependencies | 0.90 | AI packages (45 frameworks), lockfile, licenses, CVEs | 12 |
-| **L4** Code Patterns | 0.75 | 40+ AST patterns, SDK wrapper, disclosure, logging | 33 |
+| **L4** Code Patterns | 0.75 | 40+ AST patterns, disclosure, logging, permissions | 33 |
 | **L5** LLM Analysis | 0.70 | Targeted analysis for uncertain findings (opt-in, BYOK) | dynamic |
-| **Cross-Layer** | — | 7 consistency rules (doc-code mismatch, SDK without disclosure, etc.) | 7 |
+| **Cross-Layer** | — | 6 consistency rules (doc-code mismatch, logging without retention, etc.) | 6 |
 
 ## What gets scanned
 
@@ -148,10 +148,15 @@ Use `--json` for structured output in CI/CD pipelines:
 
 | Severity | Meaning | Example |
 |----------|---------|---------|
-| **Critical** | Blocks deployment. Art.5 violation. | No SDK wrapper, prohibited practice |
-| **High** | Major gap. Required for your risk class. | Missing FRIA, no disclosure |
+| **Critical** | Blocks deployment. Art.5 violation. | Prohibited practice, no disclosure |
+| **High** | Major gap. Required for your risk class. | Missing FRIA, no human oversight |
 | **Medium** | Recommended. Affects score significantly. | Weak logging, incomplete error handling |
 | **Low** | Best practice. Minor score impact. | Missing .gitignore, outdated dependency |
+| **Info** | Informational. Not scored. | Bare LLM API call detected (SDK recommended) |
+
+<Info>
+  **Info findings** are detected patterns that are not compliance violations. They appear in scan output as recommendations but do not affect your score. Example: bare LLM API calls — the EU AI Act requires disclosure, logging, and oversight (separate checks), not SDK wrapping specifically.
+</Info>
 
 ## All scan flags
 

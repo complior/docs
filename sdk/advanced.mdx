@@ -1,0 +1,228 @@
+---
+title: "Advanced Features"
+sidebarTitle: "Advanced"
+description: "Config hot-reload, retry with backoff, streaming support, interaction logging, provider detection, and proxy architecture."
+---
+
+## Config Hot-Reload
+
+The SDK watches `.complior/proxy.toml` (or a custom path) for changes and reloads configuration without restarting your application.
+
+```typescript
+import { complior } from '@complior/sdk';
+import OpenAI from 'openai';
+
+// Auto-watches .complior/proxy.toml (default)
+const client = complior(new OpenAI(), {
+  biasThreshold: 0.3,
+});
+
+// Custom config path
+const client = complior(new OpenAI(), {
+  configPath: '/etc/complior/proxy.toml',
+});
+
+// Disable hot-reload entirely
+const client = complior(new OpenAI(), {
+  configPath: false,
+});
+```
+
+- File changes are debounced at **100ms**
+- Programmatic config takes precedence over file-based config on conflicts
+- The pipeline is rebuilt on each config change — no stale state
+
+### ConfigWatcher API
+
+For direct access to the watcher:
+
+```typescript
+import { createConfigWatcher } from '@complior/sdk';
+
+const watcher = createConfigWatcher(baseConfig, '.complior/proxy.toml');
+
+watcher.onChange((newConfig) => {
+  console.log('Config updated:', newConfig);
+});
+
+// Get current merged config
+const current = watcher.getConfig();
+
+// Clean up
+watcher.close();
+```
+
+## Retry
+
+Automatic retry with exponential backoff and jitter for transient errors.
+
+```typescript
+const client = complior(new OpenAI(), {
+  retry: {
+    enabled: true,       // default: true
+    maxRetries: 3,       // default: 3
+    baseDelayMs: 1000,   // default: 1000ms
+    maxDelayMs: 30000,   // default: 30000ms
+  },
+});
+```
+
+### Retryable Errors
+
+| Type | Values |
+|------|--------|
+| HTTP status codes | `429`, `500`, `502`, `503`, `504` |
+| Network error codes | `ECONNREFUSED`, `ECONNRESET`, `ETIMEDOUT`, `EPIPE`, `EAI_AGAIN` |
+
+<Warning>
+Compliance errors (`MiddlewareError` and all subclasses) are **never retried**. A `ProhibitedPracticeError` or `BiasDetectedError` will always propagate immediately.
+</Warning>
+
+### Delay Formula
+
+```
+delay = min(baseDelayMs × 2^attempt + jitter, maxDelayMs)
+jitter = random(0, baseDelayMs × 0.5)
+```
+
+### Standalone Usage
+
+The retry utility can be used independently:
+
+```typescript
+import { withRetry } from '@complior/sdk';
+
+const result = await withRetry(
+  () => fetch('https://api.example.com/data'),
+  { maxRetries: 5, baseDelayMs: 500 },
+);
+```
+
+## Streaming
+
+The SDK handles `AsyncIterable` (streaming) responses transparently:
+
+1. Stream chunks are yielded immediately to the caller (no buffering delay)
+2. Delta text is accumulated internally
+3. After the stream completes, post-hooks run on the accumulated text
+4. Compliance metadata is attached to the final result
+
+```typescript
+const stream = await client.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Hello' }],
+  stream: true,
+});
+
+for await (const chunk of stream) {
+  // Chunks arrive in real-time
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? '');
+}
+// Post-hooks (bias check, safety, etc.) run after stream ends
+```
+
+Supported stream formats:
+- **OpenAI**: `choices[0].delta.content`
+- **Anthropic**: `delta.text`
+
+<Note>
+Post-hook errors on streamed content are non-fatal — content has already been delivered to the caller. Errors are silently caught.
+</Note>
+
+## Interaction Logger
+
+Structured JSONL logging for compliance audit trails (OBL-006, Art.12).
+
+```typescript
+const client = complior(new OpenAI(), {
+  interactionLogger: true,
+  interactionLogPath: '.complior/logs/interactions.jsonl', // default
+});
+```
+
+### Log Entry Format
+
+Each LLM call produces one JSONL line:
+
+```typescript
+interface InteractionLogEntry {
+  readonly timestamp: string;       // ISO 8601
+  readonly provider: string;        // 'openai', 'anthropic', etc.
+  readonly method: string;          // 'create', etc.
+  readonly model: string;           // 'gpt-4', 'claude-3-opus', etc.
+  readonly promptHash: string;      // SHA-256 of input
+  readonly responseHash: string;    // SHA-256 of output
+  readonly latencyMs: number;       // Round-trip time
+  readonly inputTokens: number;     // Input token count
+  readonly outputTokens: number;    // Output token count
+  readonly complianceChecks: {
+    readonly disclosureVerified: boolean;
+    readonly biasCheckPassed: boolean;
+    readonly piiRedacted: number;
+    readonly escalationDetected: boolean;
+  };
+}
+```
+
+### Behavior
+
+- Logging is **fire-and-forget** — I/O never blocks the response pipeline
+- Log write failures are silently suppressed (non-critical)
+- Auto-rotates at **100 MB** — old file is renamed with timestamp suffix
+- Directory is created automatically on first write
+
+## Provider Detection
+
+The SDK auto-detects LLM providers using a 3-step strategy:
+
+<Steps>
+  <Step title="Symbol Hint">
+    Check for `Symbol.for('complior:provider')` property on the client — user-provided override.
+  </Step>
+  <Step title="Constructor Name">
+    Match `client.constructor.name` against known providers: `OpenAI`, `AzureOpenAI`, `Anthropic`.
+  </Step>
+  <Step title="Property Inspection">
+    Check for characteristic properties: `chat` (OpenAI), `messages` (Anthropic), `generateContent` (Google), `streamText`/`generateText` (Vercel AI).
+  </Step>
+</Steps>
+
+Detection determines which methods are intercepted:
+
+| Provider | Intercepted | Proxy Depth |
+|----------|-------------|-------------|
+| OpenAI | `chat.completions.create` | 3-level (chat → completions → create) |
+| Anthropic | `messages.create` | 2-level (messages → create) |
+| Google | `generateContent` | Top-level |
+| Vercel AI | `streamText`, `generateText` | Top-level |
+
+## Proxy Architecture
+
+The SDK uses a 3-layer JavaScript `Proxy` design:
+
+```
+Top-level Proxy (client)
+  │
+  ├── Intercepts namespace access (chat, messages, etc.)
+  │
+  └── Nested Proxy (namespace)
+        │
+        ├── Intercepts sub-namespace (completions)
+        │
+        └── Method Proxy (function)
+              │
+              └── Runs: pre-hooks → retry(LLM call) → stream/post-hooks
+```
+
+- The original client object is never modified
+- Non-intercepted properties pass through to the original via `Reflect.get`
+- Config watcher is cleaned up via `Symbol.for('complior:close')`
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="sliders" href="/sdk/configuration">
+    Full MiddlewareConfig and TOML reference.
+  </Card>
+  <Card title="HTTP Middleware" icon="server" href="/sdk/middleware">
+    Express, Fastify, Hono, Next.js adapters.
+  </Card>
+</CardGroup>

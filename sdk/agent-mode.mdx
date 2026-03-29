@@ -1,0 +1,205 @@
+---
+title: "Agent Mode"
+sidebarTitle: "Agent Mode"
+description: "compliorAgent() — passport-enforced compliance with permission control, rate limiting, budget tracking, circuit breaker, and action logging."
+---
+
+`compliorAgent()` extends the base `complior()` wrapper with 5 agent-specific hooks that enforce constraints defined in an [Agent Passport](/passport/overview).
+
+```typescript
+import { compliorAgent } from '@complior/sdk';
+import OpenAI from 'openai';
+import fs from 'node:fs';
+
+const passport = JSON.parse(
+  fs.readFileSync('.complior/agents/order-processor-manifest.json', 'utf-8')
+);
+
+const agent = compliorAgent(new OpenAI(), {
+  jurisdictions: ['EU'],
+  passport,
+  budgetLimitUsd: 10,
+  onAction: (entry) => console.log('LLM call:', entry),
+});
+
+// Use as normal — all constraints auto-enforced
+const response = await agent.chat.completions.create({
+  model: 'gpt-4',
+  messages: [{ role: 'user', content: 'Process order #1234' }],
+});
+```
+
+## AgentConfig
+
+`AgentConfig` extends [`MiddlewareConfig`](/sdk/configuration) with these fields:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `passport` | `Record<string, unknown>` | **required** | Agent Passport JSON |
+| `budgetLimitUsd` | `number` | From passport | Session budget cap in USD |
+| `onBudgetExceeded` | `'warn' \| 'block'` | `'block'` | Action when budget exceeded |
+| `onPermissionDenied` | `'warn' \| 'block'` | `'block'` | Action when method is denied |
+| `toolCallAction` | `ToolCallAction` | `'block'` | How to handle denied tool calls |
+| `onToolCallDenied` | `(denied: DeniedToolCall[]) => void` | `undefined` | Callback for denied tool calls |
+| `onAction` | `(entry: ActionLogEntry) => void` | `undefined` | Audit callback for each LLM call |
+| `circuitBreaker` | `CircuitBreakerConfig` | `undefined` | Circuit breaker settings |
+
+## Passport Field Mapping
+
+The SDK reads these fields from the passport object:
+
+| Passport Path | Hook | Behavior |
+|--------------|------|----------|
+| `permissions.denied[]` | Permission | Methods in this list are blocked |
+| `permissions.tools[]` | Tool-call permission | Allowed tool names |
+| `constraints.prohibited_actions[]` | Permission | Action names that are blocked |
+| `constraints.rate_limits.max_actions_per_minute` | Rate limit | Sliding window cap |
+| `constraints.budget.max_cost_per_session_usd` | Budget | Session cost limit (overridden by `budgetLimitUsd`) |
+
+## Hook Pipeline
+
+Agent hooks are added around the standard compliance hooks:
+
+```
+PRE-HOOKS (agent):
+  1. Permission check     ← passport.permissions.denied + constraints.prohibited_actions
+  2. Rate limit           ← constraints.rate_limits.max_actions_per_minute
+
+PRE-HOOKS (standard):
+  3. Logger, Prohibited, Sanitize, Disclosure...
+
+LLM API CALL
+
+POST-HOOKS (standard):
+  4. Disclosure Verify, Content Marking, Bias Check...
+
+POST-HOOKS (agent):
+  5. Tool-call permission ← passport.permissions.tools (allowlist/denylist)
+  6. Circuit breaker      ← error threshold monitoring
+  7. Budget tracking      ← token cost accumulation
+  8. Action log           ← audit callback
+```
+
+## Permission Enforcement
+
+The permission pre-hook blocks API calls based on the passport:
+
+```typescript
+const agent = compliorAgent(new OpenAI(), {
+  passport: {
+    permissions: {
+      denied: ['images.generate'],     // Block image generation
+      tools: ['web_search', 'calculator'], // Only these tools allowed
+    },
+    constraints: {
+      prohibited_actions: ['delete', 'drop'],
+    },
+  },
+  onPermissionDenied: 'block', // Throws PermissionDeniedError
+});
+```
+
+## Rate Limiting
+
+Sliding 60-second window based on passport constraints:
+
+```typescript
+const agent = compliorAgent(new OpenAI(), {
+  passport: {
+    constraints: {
+      rate_limits: { max_actions_per_minute: 30 },
+    },
+  },
+});
+// Throws RateLimitError after 30 calls within 60 seconds
+```
+
+## Budget Tracking
+
+Estimates token cost from response metadata and accumulates across the session:
+
+```typescript
+const agent = compliorAgent(new OpenAI(), {
+  passport: { /* ... */ },
+  budgetLimitUsd: 5.00,           // $5 session cap
+  onBudgetExceeded: 'block',      // Throws BudgetExceededError
+});
+```
+
+If `budgetLimitUsd` is not set, the SDK falls back to `passport.constraints.budget.max_cost_per_session_usd`.
+
+## Circuit Breaker
+
+3-state machine that suspends the agent after consecutive errors (Art.14(4)(b)):
+
+```
+closed ──[errors ≥ threshold]──→ open ──[cooldown elapsed]──→ half-open
+  ↑                                                              │
+  └──────────────[probe succeeds]──────────────────────────────┘
+```
+
+```typescript
+const agent = compliorAgent(new OpenAI(), {
+  passport: { /* ... */ },
+  circuitBreaker: {
+    errorThreshold: 5,     // Trip after 5 errors (default)
+    windowMs: 60_000,       // Count errors within 60s window (default)
+    cooldownMs: 30_000,     // Wait 30s before half-open probe (default)
+    onTrip: (state) => console.log(`Circuit: ${state}`),
+  },
+});
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `errorThreshold` | `number` | `5` | Consecutive errors to trip |
+| `windowMs` | `number` | `60000` | Sliding window for error counting |
+| `cooldownMs` | `number` | `30000` | Cooldown before half-open probe |
+| `onTrip` | `(state) => void` | `undefined` | Callback on state transitions |
+
+When the circuit is **open**, all calls throw `CircuitBreakerError` until cooldown elapses. In **half-open**, one probe call is allowed — success resets to **closed**, failure re-opens.
+
+## Action Logging
+
+Every LLM call produces an `ActionLogEntry` via the `onAction` callback:
+
+```typescript
+interface ActionLogEntry {
+  readonly provider: string;     // 'openai', 'anthropic', etc.
+  readonly method: string;       // 'create', 'generateContent', etc.
+  readonly timestamp: string;    // ISO 8601
+  readonly cost: number;         // Estimated cost in USD
+  readonly metadata: Record<string, unknown>;
+}
+```
+
+```typescript
+const entries: ActionLogEntry[] = [];
+
+const agent = compliorAgent(new OpenAI(), {
+  passport: { /* ... */ },
+  onAction: (entry) => entries.push(entry),
+});
+
+// After calls, `entries` contains the full audit trail
+```
+
+## Tool-Call Permission
+
+The tool-call post-hook inspects LLM responses for tool/function calls and validates them against the passport:
+
+- `passport.permissions.tools[]` — allowlist (only these tools permitted)
+- `passport.permissions.denied[]` — denylist (these tools blocked)
+- `toolCallAction` — `'block'` (remove denied calls) or `'warn'` (pass through with warning)
+- `onToolCallDenied` — callback with details of denied tool calls
+
+Supports OpenAI, Anthropic, and Google tool-call response formats.
+
+<CardGroup cols={2}>
+  <Card title="Agent Passport" icon="id-card" href="/passport/overview">
+    Create and manage Agent Passports.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/sdk/errors">
+    Agent-specific errors: Permission, Budget, RateLimit, CircuitBreaker.
+  </Card>
+</CardGroup>

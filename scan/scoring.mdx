@@ -42,6 +42,10 @@ frameworks = ["eu-ai-act", "aiuc-1", "owasp-llm", "mitre-atlas"]
 
 Each framework has its own scorer with independent weights and rules. The default is `["eu-ai-act"]`.
 
+## Info findings
+
+Findings with severity `info` are **excluded from scoring**. They appear in scan output as recommendations (e.g., "bare LLM API call detected — consider `@complior/sdk`") but do not reduce your compliance score. Only `fail` findings count toward scoring.
+
 ## Score composition
 
 Scores are computed in 3 layers:

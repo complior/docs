@@ -1,0 +1,142 @@
+---
+title: "Bias Detection"
+sidebarTitle: "Bias Detection"
+description: "Screen LLM responses for bias across 15 EU Charter Art.21 protected characteristics with domain-aware scoring."
+---
+
+The bias check post-hook screens LLM responses for discriminatory language across all 15 protected characteristics defined in the EU Charter of Fundamental Rights, Article 21.
+
+## 15 Protected Characteristics
+
+| Characteristic | Example Patterns | Severity Range |
+|---------------|-----------------|----------------|
+| `sex` | Gender stereotypes, role enforcement, selection bias | MEDIUM–HIGH |
+| `race` | Racial generalizations, supremacy language | MEDIUM–CRITICAL |
+| `colour` | Skin colour capability bias | HIGH |
+| `ethnic_origin` | Ethnic generalizations, xenophobic directives | MEDIUM–HIGH |
+| `social_origin` | Class-based bias, preferential treatment | MEDIUM |
+| `genetic_features` | Genetic determinism, genetic screening for access | HIGH–CRITICAL |
+| `language` | Language-based competence bias | LOW–MEDIUM |
+| `religion` | Religious stereotypes, discrimination directives | MEDIUM–HIGH |
+| `political_opinion` | Political stereotyping, discrimination | MEDIUM–HIGH |
+| `national_minority` | Minority exclusion, group slurs | HIGH–CRITICAL |
+| `property` | Wealth-based discrimination, access denial | MEDIUM–HIGH |
+| `birth` | Birth-based discrimination, origin prejudice | MEDIUM |
+| `disability` | Capability stereotypes, exclusion, slurs | HIGH–CRITICAL |
+| `age` | Age-based capability bias (both older and younger) | MEDIUM–HIGH |
+| `sexual_orientation` | Pathologization, discrimination | HIGH–CRITICAL |
+| `nationality` | Nationality stereotypes, discrimination | HIGH |
+
+## Severity Weights
+
+Each pattern has a severity level that determines its contribution to the aggregate score:
+
+| Severity | Weight | Description |
+|----------|--------|-------------|
+| `LOW` | 0.1 | Stereotyping, mild generalizations |
+| `MEDIUM` | 0.3 | Differential treatment language |
+| `HIGH` | 0.6 | Discriminatory outcome language |
+| `CRITICAL` | 1.0 | Explicit slurs, hate speech, supremacy |
+
+## Scoring Formula
+
+```
+pattern weight × domain multiplier → per-finding score
+sum(per-finding scores) → aggregate score
+aggregate score > threshold → action (warn or block)
+```
+
+## Domain Profiles
+
+Each domain profile sets a default threshold and weight multipliers for characteristics that are especially sensitive in that context.
+
+### General (default)
+
+- **Threshold**: 0.3
+- **Multipliers**: None (all at 1.0×)
+
+### HR / Recruitment
+
+The strictest profile — HR is classified as high-risk under EU AI Act Art.6(2).
+
+- **Threshold**: 0.15
+- **2.0× multipliers**: sex, race, age, disability, ethnic_origin
+- **1.5× multipliers**: religion, sexual_orientation, nationality, political_opinion
+
+```typescript
+import { complior } from '@complior/sdk';
+import OpenAI from 'openai';
+
+const client = complior(new OpenAI(), {
+  domain: 'hr',
+  biasAction: 'block',
+  // Threshold auto-set to 0.15, multipliers applied
+});
+```
+
+### Finance
+
+Strict on property and social origin for credit/loan decisions.
+
+- **Threshold**: 0.2
+- **2.0× multipliers**: property, social_origin
+- **1.5× multipliers**: race, nationality, birth
+
+### Healthcare
+
+Strict on disability and genetic features for medical decisions.
+
+- **Threshold**: 0.2
+- **2.0× multipliers**: disability, genetic_features
+- **1.5× multipliers**: age, race, sex
+
+### Education
+
+Strict on age, disability, and social origin for admissions/grading.
+
+- **Threshold**: 0.2
+- **2.0× multipliers**: age, disability, social_origin
+- **1.5× multipliers**: language, ethnic_origin, birth
+
+## Configuration
+
+```typescript
+import { complior } from '@complior/sdk';
+import OpenAI from 'openai';
+
+const client = complior(new OpenAI(), {
+  domain: 'finance',       // Activates finance profile
+  biasThreshold: 0.15,     // Override profile default (0.2)
+  biasAction: 'block',     // Throw BiasDetectedError
+});
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `domain` | `Domain` | `undefined` | Activates domain profile (sets threshold + multipliers) |
+| `biasThreshold` | `number` | Profile default | Override threshold (0–1, lower = stricter) |
+| `biasAction` | `'warn' \| 'block'` | `'warn'` | Action on threshold exceeded |
+
+## BiasEvidence
+
+When a finding is detected, it produces a `BiasEvidence` object:
+
+```typescript
+interface BiasEvidence {
+  readonly characteristic: string; // e.g., 'sex', 'race'
+  readonly severity: string;       // 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+  readonly evidence: string;       // Matched text
+  readonly score: number;          // weight × domain multiplier
+}
+```
+
+In `warn` mode, findings are available in response metadata. In `block` mode, they are on the `BiasDetectedError`.
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/sdk/errors">
+    `BiasDetectedError` reference.
+  </Card>
+  <Card title="Safety Filter" icon="shield-halved" href="/sdk/safety">
+    Content safety patterns and HITL gate.
+  </Card>
+</CardGroup>

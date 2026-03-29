@@ -1,0 +1,151 @@
+---
+title: "HTTP Middleware"
+sidebarTitle: "Middleware"
+description: "4 HTTP middleware adapters (Express, Fastify, Hono, Next.js) that inject compliance headers from SDK responses."
+---
+
+The SDK provides HTTP middleware adapters that extract compliance metadata from LLM responses and inject them as HTTP headers. This enables downstream services, API gateways, and monitoring tools to observe compliance status.
+
+## How It Works
+
+1. Your API endpoint calls the SDK-wrapped LLM client
+2. The SDK attaches `_complior` metadata to the LLM response
+3. The HTTP middleware intercepts outgoing responses
+4. Metadata is extracted and injected as HTTP headers
+
+## Compliance Headers
+
+| Header | Description | Example Value |
+|--------|-------------|---------------|
+| `X-AI-Disclosure` | AI disclosure status | `true`, `verified` |
+| `X-AI-Provider` | LLM provider name | `openai`, `anthropic` |
+| `X-AI-Model` | Model used | `gpt-4` |
+| `X-Compliance-Score` | Compliance score (0–100) | `95` |
+| `X-Content-Marking` | AI-generated content marking | `true` |
+| `X-Bias-Warning` | Bias detection warning | `true` |
+| `X-Bias-Score` | Bias aggregate score | `0.15` |
+| `X-Human-Review` | HITL gate triggered | `true` |
+| `X-Tool-Permission-Warning` | Tool permission issue | `true` |
+
+## Express
+
+```typescript
+import express from 'express';
+import { compliorExpress } from '@complior/sdk/middleware';
+
+const app = express();
+
+// Apply globally
+app.use(compliorExpress());
+
+// Or with header filtering
+app.use(compliorExpress({
+  headers: {
+    include: ['X-AI-Disclosure', 'X-Compliance-Score'],
+    // or exclude: ['X-Bias-Score']
+  },
+}));
+
+app.post('/api/chat', async (req, res) => {
+  const response = await client.chat.completions.create({ /* ... */ });
+  res.json(response);
+  // Headers automatically injected before response is sent
+});
+```
+
+The Express adapter intercepts `res.write()` and `res.end()` to capture the response body, extract compliance metadata, and set headers before the response is finalized.
+
+## Fastify
+
+```typescript
+import Fastify from 'fastify';
+import { compliorFastify } from '@complior/sdk/middleware';
+
+const fastify = Fastify();
+
+// Register as plugin
+fastify.register(compliorFastify());
+
+// With header filtering
+fastify.register(compliorFastify({
+  headers: { exclude: ['X-AI-Model'] },
+}));
+
+fastify.post('/api/chat', async (request, reply) => {
+  const response = await client.chat.completions.create({ /* ... */ });
+  return response;
+  // onSend hook injects headers
+});
+```
+
+Uses Fastify's `onSend` hook to intercept the serialized payload.
+
+## Hono
+
+```typescript
+import { Hono } from 'hono';
+import { compliorHono } from '@complior/sdk/middleware';
+
+const app = new Hono();
+
+// Apply globally
+app.use('*', compliorHono());
+
+app.post('/api/chat', async (c) => {
+  const response = await client.chat.completions.create({ /* ... */ });
+  return c.json(response);
+  // Headers injected after handler completes
+});
+```
+
+The Hono adapter uses async/await middleware — it calls `next()`, then clones the response to extract metadata and set headers.
+
+<Note>Streaming responses may not be clonable — header injection is silently skipped in that case.</Note>
+
+## Next.js
+
+```typescript
+// pages/api/chat.ts
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { compliorNextjs } from '@complior/sdk/middleware';
+
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const response = await client.chat.completions.create({ /* ... */ });
+  res.json(response);
+};
+
+export default compliorNextjs(handler);
+
+// With header filtering
+export default compliorNextjs(handler, {
+  headers: { include: ['X-AI-Disclosure', 'X-Compliance-Score'] },
+});
+```
+
+Wraps `res.json()` and `res.send()` to inject headers before the response is sent.
+
+## Header Filtering
+
+All adapters accept a `MiddlewareOptions` object:
+
+```typescript
+interface MiddlewareOptions {
+  readonly headers?: {
+    readonly include?: readonly string[];  // Only these headers pass
+    readonly exclude?: readonly string[];  // Remove these headers
+  };
+}
+```
+
+- If `include` is set, only listed headers are injected
+- If `exclude` is set, listed headers are removed from output
+- Both can be combined — `include` is applied first, then `exclude`
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="sliders" href="/sdk/configuration">
+    SDK configuration reference.
+  </Card>
+  <Card title="Providers" icon="plug" href="/sdk/providers">
+    Supported LLM providers.
+  </Card>
+</CardGroup>

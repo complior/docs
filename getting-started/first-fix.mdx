@@ -55,13 +55,7 @@ DOCUMENTS CREATED  (5 fixes)
 
   ...
 
-CODE FIXES — INLINE  (27 fixes)
-
-  SDK Wrapper (5 fixes)
-    ✓  Art. 50(1) Wrap bare LLM client calls with @complior/sdk  [SCAFFOLD]
-                   src/middleware/ai-compliance-wrapper.ts
-    ✓  Art. 50(1) Wrap bare LLM call
-                   src/data/eval/remediation/owasp-llm05.ts (+ 2 more)
+CODE FIXES — INLINE  (22 fixes)
 
   Security Fixes (5 fixes)
     ✓  Art. 15(4) Add compliance-aware error handling  [SCAFFOLD]
@@ -116,7 +110,7 @@ Fixes are grouped by what they modify:
   <Tab title="Code (inline)">
     Modifies source code to add compliance features:
 
-    - **SDK Wrapper** — wraps bare LLM calls with `@complior/sdk` for transparency (Art.50)
+    - **Disclosure Inject** — adds "I am an AI" system message for transparency (Art.50)
     - **Error Handling** — adds try-catch around LLM calls (Art.14)
     - **Security Fixes** — removes unsafe patterns like eval(), command injection (Art.15)
     - **Compliance Middleware** — creates wrapper and error handler scaffolds

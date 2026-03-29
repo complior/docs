@@ -20,9 +20,9 @@ complior scan
 | **L1: File Presence** | Key files (README, LICENSE, .env, passport) | 1.00 | Missing privacy policy, no Agent Passport |
 | **L2: Document Structure** | Required sections in compliance docs | 0.95 | Incomplete FRIA, shallow worker notification |
 | **L3: Dependencies** | AI packages, lockfile, licenses, CVEs | 0.90 | Unvetted AI framework, missing bias testing lib |
-| **L4: Code Patterns** | 40+ AST patterns, SDK wrappers, permissions | 0.75 | Bare LLM API call, missing error handling |
+| **L4: Code Patterns** | 40+ AST patterns, disclosure, permissions | 0.75 | Missing error handling, no disclosure marker |
 | **NHI: Secrets** | 37 secret patterns (API keys, tokens) | — | Exposed API key in source |
-| **CROSS: Cross-Layer** | Consistency rules across layers | — | Logging without retention, kill-switch without tests |
+| **CROSS: Cross-Layer** | 6 consistency rules across layers | — | Logging without retention, kill-switch without tests |
 | **GPAI: Systemic Risk** | GPAI compliance checks | — | Systemic risk indicators |
 | **L5: LLM** | Deep semantic analysis (opt-in, `--llm`) | varies | Implicit bias in prompt template |
 
@@ -73,10 +73,10 @@ F-002  !  HIGH  [L1]  Art. 6(2) · High-Risk Domain: Finance
    AI system is likely high-risk under EU AI Act Art. 6(2).
    File:  src/data/industry-patterns.ts:43
 
-F-020  *  MEDIUM  [L4]  Art. 50(1) · Bare LLM API Call
-   WARNING: OpenAI bare API call — eu-ai-act-OBL-015 Art. 50(1)
+F-020  ℹ  INFO  [L4]  Art. 50(1) · Bare LLM API Call
+   Bare LLM API call detected. Consider @complior/sdk for runtime compliance.
    File:  src/data/eval/remediation/owasp-llm05.ts:12
-   Fix:  Wrap LLM calls with complior.wrap() or add AI disclosure
+   Fix:  Optional: wrap with @complior/sdk for runtime Art. 50/12/14 enforcement
 ```
 
 <Warning>

@@ -1,0 +1,210 @@
+---
+title: "Error Handling"
+sidebarTitle: "Errors"
+description: "12 error classes for compliance violations — catch specific errors with instanceof."
+---
+
+All SDK errors extend `MiddlewareError`, which extends `Error`. Each error class has a unique `code` string and structured fields for programmatic handling.
+
+## Error Hierarchy
+
+```
+Error
+└── MiddlewareError (code: string)
+    ├── ProhibitedPracticeError    PROHIBITED_PRACTICE
+    ├── PIIDetectedError           PII_DETECTED
+    ├── BiasDetectedError          BIAS_DETECTED
+    ├── SafetyViolationError       SAFETY_VIOLATION
+    ├── DisclosureMissingError     DISCLOSURE_MISSING
+    ├── HumanGateDeniedError       HUMAN_GATE_DENIED
+    ├── DomainViolationError       DOMAIN_VIOLATION
+    ├── PermissionDeniedError      PERMISSION_DENIED
+    ├── BudgetExceededError        BUDGET_EXCEEDED
+    ├── RateLimitError             RATE_LIMIT
+    └── CircuitBreakerError        CIRCUIT_BREAKER
+```
+
+## Catching Errors
+
+```typescript
+import {
+  ProhibitedPracticeError,
+  PIIDetectedError,
+  BiasDetectedError,
+  SafetyViolationError,
+  HumanGateDeniedError,
+  BudgetExceededError,
+  MiddlewareError,
+} from '@complior/sdk';
+
+try {
+  const response = await client.chat.completions.create({
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: userInput }],
+  });
+} catch (error) {
+  if (error instanceof ProhibitedPracticeError) {
+    console.error(`Art.5 violation: ${error.category}`);
+    console.error(`Penalty: ${error.penalty}`);
+  } else if (error instanceof PIIDetectedError) {
+    console.error(`PII found: ${error.piiType} (${error.category})`);
+  } else if (error instanceof BiasDetectedError) {
+    console.error(`Bias score: ${error.totalScore} > ${error.threshold}`);
+    error.findings.forEach(f =>
+      console.error(`  ${f.characteristic}: ${f.severity} (${f.score})`)
+    );
+  } else if (error instanceof HumanGateDeniedError) {
+    console.error(`HITL ${error.reason}: rule "${error.rule}"`);
+  } else if (error instanceof BudgetExceededError) {
+    console.error(`$${error.totalCost} exceeds $${error.limitUsd} limit`);
+  } else if (error instanceof MiddlewareError) {
+    // Catch-all for any compliance error
+    console.error(`Compliance error [${error.code}]: ${error.message}`);
+  }
+}
+```
+
+## Error Reference
+
+### ProhibitedPracticeError
+
+Thrown when input matches an EU AI Act Article 5 prohibited practice (138 patterns, 8 categories, 6 languages).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'PROHIBITED_PRACTICE'` | Error code |
+| `obligationId` | `string` | EU AI Act obligation ID |
+| `article` | `string` | Article reference (e.g., `'Art.5'`) |
+| `category` | `string` | Prohibition category (e.g., `'social_scoring'`, `'subliminal'`) |
+| `matchedPattern` | `string` | The pattern that matched |
+| `penalty` | `string` | Maximum penalty (default: `'€35M or 7% global turnover'`) |
+
+### PIIDetectedError
+
+Thrown in `block` sanitize mode when PII is detected in input.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'PII_DETECTED'` | Error code |
+| `piiType` | `string` | PII type ID (e.g., `'SSN'`, `'IBAN'`, `'EMAIL'`) |
+| `category` | `string` | PII category (e.g., `'identity_national'`, `'financial'`) |
+| `article` | `string` | Legal basis (e.g., `'GDPR Art.87'`, `'GDPR Art.6'`) |
+
+### BiasDetectedError
+
+Thrown in `block` bias mode when aggregate bias score exceeds threshold.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'BIAS_DETECTED'` | Error code |
+| `findings` | `BiasEvidence[]` | Array of individual findings |
+| `totalScore` | `number` | Aggregate weighted score |
+| `threshold` | `number` | Active threshold (domain-specific) |
+| `domain` | `string` | Active domain profile |
+
+**`BiasEvidence`**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `characteristic` | `string` | Protected characteristic (e.g., `'sex'`, `'race'`) |
+| `severity` | `string` | `'LOW'` \| `'MEDIUM'` \| `'HIGH'` \| `'CRITICAL'` |
+| `evidence` | `string` | Matched text |
+| `score` | `number` | Individual pattern score |
+
+### SafetyViolationError
+
+Thrown when response safety score exceeds threshold.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'SAFETY_VIOLATION'` | Error code |
+| `findings` | `SafetyFinding[]` | Array of safety findings |
+| `totalScore` | `number` | Aggregate safety score |
+| `threshold` | `number` | Active threshold |
+
+**`SafetyFinding`**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `category` | `string` | `'violence'` \| `'self_harm'` \| `'illegal_instructions'` \| `'pii_leakage'` \| `'hallucination_indicator'` |
+| `severity` | `string` | `'LOW'` \| `'MEDIUM'` \| `'HIGH'` \| `'CRITICAL'` |
+| `evidence` | `string` | Matched text |
+| `score` | `number` | Individual pattern score |
+
+### DisclosureMissingError
+
+Thrown in `block` disclosure mode when AI disclosure is not found in the response.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'DISCLOSURE_MISSING'` | Error code |
+| `language` | `string` | Language checked |
+| `expectedPatterns` | `string[]` | Patterns that were expected |
+
+### HumanGateDeniedError
+
+Thrown when HITL gate denies an action (human denial or timeout).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'HUMAN_GATE_DENIED'` | Error code |
+| `reason` | `'denied' \| 'timeout'` | Denial reason |
+| `rule` | `string` | Rule ID that triggered the gate |
+| `timeoutMs` | `number \| undefined` | Timeout duration (only for timeout) |
+
+### DomainViolationError
+
+Thrown by domain-specific hooks (HR, finance, healthcare, etc.).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'DOMAIN_VIOLATION'` | Error code |
+| `domain` | `string` | Domain that triggered the violation |
+| `obligationId` | `string` | Related obligation ID |
+
+### PermissionDeniedError
+
+Thrown in agent mode when a method is on the passport's denied list.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'PERMISSION_DENIED'` | Error code |
+| `method` | `string` | Denied method name |
+
+### BudgetExceededError
+
+Thrown in agent mode when accumulated cost exceeds the session budget.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'BUDGET_EXCEEDED'` | Error code |
+| `totalCost` | `number` | Total accumulated cost (USD) |
+| `limitUsd` | `number` | Budget limit (USD) |
+
+### RateLimitError
+
+Thrown in agent mode when actions exceed the per-minute rate limit.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'RATE_LIMIT'` | Error code |
+| `maxPerMinute` | `number` | Configured rate limit |
+
+### CircuitBreakerError
+
+Thrown in agent mode when the circuit breaker is open (too many consecutive errors).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | `'CIRCUIT_BREAKER'` | Error code |
+| `circuitState` | `string` | Current state (`'open'` \| `'half-open'`) |
+| `errorThreshold` | `number` | Error count that triggered the trip |
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="sliders" href="/sdk/configuration">
+    Set modes and thresholds for each hook.
+  </Card>
+  <Card title="Agent Mode" icon="robot" href="/sdk/agent-mode">
+    Permission, budget, rate limit, circuit breaker.
+  </Card>
+</CardGroup>
