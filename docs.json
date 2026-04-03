@@ -104,6 +104,7 @@
               "passport/overview",
               "passport/passport-modes",
               "passport/data-pipeline",
+              "passport/endpoints",
               "passport/autonomy-levels",
               "passport/risk-classification",
               "passport/evidence-chain",

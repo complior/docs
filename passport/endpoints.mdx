@@ -1,0 +1,147 @@
+---
+title: "Endpoint Detection"
+sidebarTitle: "Endpoints"
+description: "How Complior discovers and manages AI system endpoints in passports — automatic detection from code, Docker, .env, plus manual configuration."
+---
+
+The `endpoints` field in an Agent Passport lists all HTTP endpoints where the AI system is reachable. This is required for `complior eval` to know **where** to send conformity probes, and for Art.13 (instructions for use) to document the system's interfaces.
+
+<Info>
+  **Why endpoints matter:** EU AI Act Art.13 requires clear documentation of the AI system's interfaces. Art.15 requires robustness testing of the actual deployed system. Without endpoints, `complior eval` has no target.
+</Info>
+
+## Automatic detection
+
+During `complior init` (or `complior agent init`), the endpoint discovery pipeline scans **5 sources** in priority order:
+
+| Priority | Source | Pattern | Example |
+|----------|--------|---------|---------|
+| 1 | `.env` / `.env.example` | `PORT=4000` | Port from environment config |
+| 2 | Dockerfile | `EXPOSE 3000` | Port from container config |
+| 3 | docker-compose.yml | `ports: ["8080:8080"]` | Port from orchestration config |
+| 4 | Source code | `{ port: 3000 }` | Port from Hono/Express/Fastify config |
+| 5 | Source code | `.listen(8080)` | Port from Node.js `listen()` call |
+
+Once a port is found, Complior also scans source files for **route patterns** (`.get()`, `.post()`, etc.) and builds full endpoint URLs:
+
+```
+http://localhost:4000/api/chat
+http://localhost:4000/v1/chat/completions
+http://localhost:4000/health
+```
+
+### Detection examples
+
+<AccordionGroup>
+  <Accordion title="From .env" icon="file">
+    ```bash title=".env"
+    PORT=4000
+    NODE_ENV=production
+    ```
+    Result: `http://localhost:4000` + detected routes.
+  </Accordion>
+  <Accordion title="From Dockerfile" icon="docker">
+    ```dockerfile title="Dockerfile"
+    FROM node:20-slim
+    WORKDIR /app
+    COPY . .
+    EXPOSE 3000
+    CMD ["node", "server.js"]
+    ```
+    Result: `http://localhost:3000` + detected routes.
+  </Accordion>
+  <Accordion title="From docker-compose.yml" icon="docker">
+    ```yaml title="docker-compose.yml"
+    services:
+      app:
+        build: .
+        ports:
+          - "8080:8080"
+    ```
+    Result: `http://localhost:8080` + detected routes.
+  </Accordion>
+  <Accordion title="From source code" icon="code">
+    ```typescript title="src/server.ts"
+    const app = new Hono();
+    app.post('/api/chat', chatHandler);
+    app.get('/health', healthHandler);
+    export default { port: 4000, fetch: app.fetch };
+    ```
+    Result: `http://localhost:4000/api/chat`, `http://localhost:4000/health`.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  `.env` takes priority over code patterns. If you have `PORT=5000` in `.env` and `{ port: 3000 }` in code, the passport will use port 5000.
+</Tip>
+
+## Manual configuration
+
+If automatic detection doesn't find your endpoints (e.g., the port is injected at deploy time, or the AI system is behind a reverse proxy), edit the passport JSON directly:
+
+```bash
+nano .complior/agents/my-agent-manifest.json
+```
+
+Find the `endpoints` field and add your URLs:
+
+```json title=".complior/agents/my-agent-manifest.json"
+{
+  "name": "my-agent",
+  "endpoints": [
+    "https://api.example.com/v1/chat",
+    "https://api.example.com/health"
+  ]
+}
+```
+
+After editing, re-sign the passport:
+
+```bash
+complior agent validate my-agent
+```
+
+<Note>
+  Manual endpoints are **preserved** across `complior init` runs. Use `--force` only if you want to regenerate from scratch.
+</Note>
+
+## Using endpoints with eval
+
+Once endpoints are in the passport, `complior eval` can auto-resolve the target:
+
+```bash
+# Explicit target (always works)
+complior eval http://localhost:4000/api/chat --agent my-agent
+
+# Auto-resolve from passport endpoints (when only one agent exists)
+complior eval --det
+```
+
+When `--agent` is specified, the eval results are saved to that passport's `compliance.eval` block.
+
+## When endpoints are not detected
+
+If no port is found from any source, the passport's `endpoints` field is omitted. You'll see this in `complior agent show`:
+
+```
+ENDPOINTS
+  (none detected)
+```
+
+Common reasons and fixes:
+
+| Reason | Fix |
+|--------|-----|
+| Port injected via CI/CD | Add `PORT=<value>` to `.env.example` |
+| Port in Kubernetes config | Add a Dockerfile with `EXPOSE` |
+| Serverless deployment | Add the function URL manually to the passport |
+| Monorepo with shared config | Run `complior init` from the service subdirectory |
+
+<CardGroup cols={2}>
+  <Card title="Data Pipeline" icon="timeline" href="/passport/data-pipeline">
+    How endpoints fit into the 11-stage passport data fill pipeline.
+  </Card>
+  <Card title="Run Eval" icon="flask-vial" href="/eval/overview">
+    Test your AI system's behavior at the detected endpoints.
+  </Card>
+</CardGroup>
