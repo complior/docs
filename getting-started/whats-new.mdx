@@ -1,0 +1,127 @@
+---
+title: "What's New"
+description: "Latest changes in Complior — v1.0.1 patch + v1.0.0 GA release notes."
+sidebarTitle: "What's New"
+---
+
+<Info>
+  **Latest:** v1.0.1 (2026-05-03) — patch release. **EU AI Act enforcement begins August 2, 2026** (~91 days from latest release).
+</Info>
+
+## v1.0.1 — Patch Release
+
+**Released:** 2026-05-03
+
+Closes the only known limitation from v1.0.0.
+
+### Fixed
+
+`complior fix --doc <type>` now surfaces the actual engine error message when an invalid passport name is passed:
+
+```diff
+- Error: Unknown engine error
++ Error: Passport not found: default
+```
+
+The functional behaviour was already correct in v1.0.0 (exit code 1, no fake "Document generated" output) — only the displayed message has improved.
+
+### Upgrade
+
+<Tabs>
+  <Tab title="npm">
+    ```bash
+    npm install -g complior@1.0.1
+    ```
+  </Tab>
+  <Tab title="cargo">
+    ```bash
+    cargo install --force complior-cli
+    ```
+  </Tab>
+  <Tab title="GitHub Release">
+    Download from [v1.0.1 release page](https://github.com/complior/complior/releases/tag/v1.0.1).
+  </Tab>
+</Tabs>
+
+---
+
+## v1.0.0 — Initial GA Release
+
+**Released:** 2026-05-03
+
+First general-availability release. Production-ready for EU AI Act compliance.
+
+### Highlights
+
+<CardGroup cols={2}>
+  <Card title="Profile-aware filtering" icon="filter">
+    `role × riskLevel × domain → applicableObligations`. Examples: deployer/limited/general → 16 obligations; provider/high/healthcare → 67; deployer/high/finance → 46.
+  </Card>
+  <Card title="680 eval probes" icon="flask-vial">
+    11 EU AI Act conformity categories + 300 OWASP/MITRE security probes. Profile-aware: 319/335/327 of 388 tests applicable per profile.
+  </Card>
+  <Card title="14 SDK hooks" icon="puzzle-piece">
+    7 pre + 7 post hooks. PII sanitization with checksum validation (IBAN, BSN, NIR, PESEL, Codice Fiscale). 138 Art. 5 prohibited patterns.
+  </Card>
+  <Card title="Multi-framework scoring" icon="award">
+    EU AI Act + AIUC-1 + OWASP LLM Top 10 + MITRE ATLAS. AIUC-1 Readiness score (15 requirements).
+  </Card>
+  <Card title="Agent Passport" icon="id-card">
+    36-field standardized identity card. 3 modes (Auto / Guided / Manual). Ed25519 signed. Export A2A / AIUC-1 / NIST.
+  </Card>
+  <Card title="Evidence chain" icon="link">
+    SHA-256 hash linking + ed25519 signatures. Tamper-proof audit trail.
+  </Card>
+</CardGroup>
+
+### Pipeline commands
+
+All v1.0 pipeline commands stable with full flag coverage:
+
+```bash
+complior init           # 9-question onboarding → profile + passport
+complior scan           # 5-layer static analysis
+complior eval <url>     # 680 dynamic probes against live AI
+complior fix            # 18 remediation strategies
+complior fix --doc <type>  # Generate compliance documents
+complior report         # 5 formats: human/json/md/html/pdf
+complior agent          # 13 verbs for passport management
+complior doctor         # System health check
+```
+
+### Distribution
+
+Available across 3 ecosystems + 5 platforms:
+
+| Channel | Package | Install |
+|---------|---------|---------|
+| **npm** | `complior@1.0.1` | `npm install -g complior` |
+| **npm** | `@complior/engine@1.0.1` | (auto-installed by `complior`) |
+| **crates.io** | `complior-cli@1.0.1` | `cargo install complior-cli` |
+| **GitHub Releases** | 5 binaries (Linux x86/arm, macOS Intel/ARM, Windows) | [download](https://github.com/complior/complior/releases/latest) |
+
+### Tests & verification
+
+- **226 Rust + 2,493 TypeScript = 2,719 total tests, 0 failures**
+- 4-cycle exhaustive E2E across 3 profile contexts before tag
+- 11 mini-hotfix milestones (V1-M30.1 → V1-M30.11) consecutively delivered
+- CI: Rust fmt + clippy + test + security audit, Engine typecheck + lint + test, npm audit, version consistency, contract tests
+
+---
+
+## What's coming next
+
+Currently planning post-v1.0.x roadmap (Month 1.5 → Month 3-4):
+
+- **V2-M01** — SDK Layer 2 enrichment (HTTP middleware, hook composition, per-domain enrichment)
+- **V2-M02** — MCP enrichment (7 → 12+ tools, Guard tools, builder tools, analytics)
+- **V2-M03** — Guard Service integration (after Guard MVP — separate track)
+- **Cloud Services** (Month 3-4): Guard API beta, Hosted LLM, Cloud Scan, SaaS Dashboard
+
+Follow [GitHub Releases](https://github.com/complior/complior/releases) for updates.
+
+---
+
+<Card title="Read full changelog" icon="clock-rotate-left" href="/changelog">
+  See every version since v0.8.0-alpha (March 2026).
+</Card>

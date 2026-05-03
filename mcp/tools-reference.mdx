@@ -1,0 +1,249 @@
+---
+title: "MCP Tools Reference"
+sidebarTitle: "Tools Reference"
+description: "Full input/output schema for all 7 Complior MCP tools."
+---
+
+Complete schema reference for the 7 MCP tools exposed by `complior mcp`. Compatible with Claude Code, Cursor, Windsurf, OpenCode, Codex, Devin, and aider.
+
+<Info>
+  Source of truth: `engine/core/src/mcp/tools.ts` (Zod schemas) + `engine/core/src/mcp/handlers.ts` (handler logic).
+</Info>
+
+---
+
+## `complior_scan`
+
+Scan a project for EU AI Act compliance. Returns score, violations, and top findings.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `path` | `string` | No | Project path to scan (default: current directory) |
+
+### Output
+
+```json
+{
+  "score": 75,
+  "zone": "yellow",
+  "totalFindings": 12,
+  "criticalFindings": 0,
+  "topFindings": [
+    {
+      "checkId": "l4-bare-llm",
+      "severity": "medium",
+      "message": "Bare LLM API call detected in 3 files. Consider @complior/sdk for runtime compliance.",
+      "fix": "Wrap with @complior/sdk for runtime Art. 50/12/14 enforcement"
+    }
+  ]
+}
+```
+
+### Example agent usage
+
+> **You:** Check the compliance of this project.
+>
+> **Agent** calls `complior_scan` with `{ path: "." }` → returns score 75/100 with 12 findings.
+
+---
+
+## `complior_fix`
+
+Auto-fix a specific compliance violation. Returns diff preview and score delta.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `checkId` | `string` | Yes | Check ID of the finding to fix (e.g., `"ai-disclosure"`) |
+| `obligationId` | `string` | No | Obligation ID (e.g., `"eu-ai-act-OBL-015"`) |
+
+### Output
+
+```json
+{
+  "applied": true,
+  "diff": "...",
+  "scoreImpact": 5,
+  "filesModified": ["src/chatbot.ts"],
+  "newScore": 80
+}
+```
+
+### Example agent usage
+
+> **You:** Fix the bare LLM call.
+>
+> **Agent** calls `complior_fix` with `{ checkId: "l4-bare-llm" }` → wraps with SDK, returns +5 score impact.
+
+---
+
+## `complior_status`
+
+Get current compliance score and category breakdown from the last scan.
+
+### Input
+
+No parameters.
+
+### Output
+
+```json
+{
+  "score": 75,
+  "zone": "yellow",
+  "categoryBreakdown": [
+    { "category": "transparency", "score": 80, "weight": 0.2 },
+    { "category": "documentation", "score": 60, "weight": 0.3 }
+  ],
+  "lastScanAt": "2026-05-03T15:00:00.000Z"
+}
+```
+
+<Warning>
+  If no scan results exist, returns `{ message: "No scan results yet. Run complior_scan first." }`.
+</Warning>
+
+---
+
+## `complior_explain`
+
+Explain an EU AI Act article or obligation in plain language with code implications.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `article` | `string` | Yes | Article reference (e.g., `"Art. 50"` or `"OBL-015"`) |
+
+### Output
+
+Plain-text explanation with:
+- Article title and risk level
+- What it requires
+- Penalty for non-compliance
+- Code implications (what to add / change in your project)
+- Related obligations
+
+### Example agent usage
+
+> **You:** Explain Article 50.
+>
+> **Agent** calls `complior_explain` with `{ article: "Art. 50" }` → returns transparency requirements + disclosure SDK example.
+
+---
+
+## `complior_search_tool`
+
+Search the AI tool catalog for compliance information about a specific tool.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `query` | `string` | Yes | Tool name or keyword (e.g., `"openai"`, `"langchain"`) |
+
+### Output
+
+```json
+{
+  "matches": [
+    {
+      "name": "openai",
+      "category": "LLM Provider",
+      "complianceNotes": "Requires Art. 50 disclosure when used in user-facing apps. EU data residency available via Azure OpenAI EU regions.",
+      "alternatives": ["mistral", "anthropic-eu"]
+    }
+  ]
+}
+```
+
+---
+
+## `complior_classify`
+
+Classify the risk level of an AI system based on its description and domain.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `description` | `string` | Yes | Description of the AI system |
+| `domain` | `string` | No | Business domain (`"healthcare"`, `"finance"`, `"hr"`, etc.) |
+
+### Output
+
+```json
+{
+  "riskLevel": "high",
+  "rationale": "Healthcare diagnostic AI matching Annex III point 5 (medical devices) — high risk under EU AI Act.",
+  "applicableArticles": ["Art. 9", "Art. 10", "Art. 13", "Art. 14", "Art. 26", "Art. 27"],
+  "requiredDocuments": ["FRIA", "Risk Management System", "Technical Documentation", "Data Governance"]
+}
+```
+
+---
+
+## `complior_report`
+
+Generate a compliance report in JSON or Markdown format.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `format` | `"json" \| "markdown"` | No | Output format (default: `markdown`) |
+
+### Output
+
+- **`format: "markdown"`** — Markdown report with score, findings table, top issues, action plan
+- **`format: "json"`** — Structured JSON with full report data (compatible with `complior report --json`)
+
+<Warning>
+  Requires a prior scan. Returns `"No scan results. Run complior_scan first."` otherwise.
+</Warning>
+
+---
+
+## Common patterns
+
+### Scan → fix loop
+
+```
+complior_scan → top findings list
+↓
+For each high-priority finding:
+  complior_explain (understand the article)
+  complior_fix (apply auto-fix)
+↓
+complior_status (verify new score)
+```
+
+### Risk classification before scan
+
+```
+complior_classify (describe the system)
+↓
+complior_search_tool (check each AI dependency)
+↓
+complior_scan (full project audit)
+↓
+complior_report (audit-ready output)
+```
+
+---
+
+## Roadmap
+
+The current 7 tools cover the core scan/fix/explain workflow. Post-v1.0 plans (V2-M02):
+
+- `complior_passport_init` — Generate Agent Passport from project
+- `complior_redteam` — Trigger 300+ adversarial probes
+- `complior_doc_generate` — Generate compliance documents (FRIA, AI Policy, etc.)
+- `complior_evidence_verify` — Verify evidence chain integrity
+- Guard tools (V2-M03, after Guard MVP)
+- Analytics tools (usage stats, drift detection)
+
+See [GitHub Discussions](https://github.com/complior/complior/discussions) for proposals.

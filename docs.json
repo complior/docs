@@ -64,6 +64,7 @@
             "pages": [
               "index",
               "installation",
+              "getting-started/whats-new",
               "getting-started/quickstart",
               "getting-started/first-scan",
               "getting-started/first-passport",
@@ -141,7 +142,8 @@
             "group": "MCP Server",
             "pages": [
               "mcp/overview",
-              "mcp/setup"
+              "mcp/setup",
+              "mcp/tools-reference"
             ]
           },
           {
