@@ -3,7 +3,29 @@ title: "Changelog"
 description: "Release history and notable changes for Complior."
 ---
 
-<Update label="v1.0.0" description="2026-03-28">
+<Update label="v1.0.1" description="2026-05-03">
+  ## Patch — `fix --doc` error message clarity
+
+  Closes the only known limitation from v1.0.0.
+
+  **Fixed**
+
+  - `complior fix --doc <type>` now surfaces the actual engine error message (e.g. `Error: Passport not found: default`) instead of the generic `Error: Unknown engine error` when an invalid passport name is passed. Functional behaviour was already correct in v1.0.0 (exit code 1, no fake "Document generated" output) — only the displayed message has improved.
+
+  **Affected paths**
+
+  - `cli/src/headless/fix.rs` (`run_doc_generate_single`)
+  - `cli/src/headless/doc.rs` (`run_doc_generate` and `run_doc_generate_fix`)
+
+  **Verification**
+
+  - 4-cycle exhaustive E2E across 3 profile contexts (deployer/limited/general, provider/high/healthcare, deployer/high/finance) — confirmed clean.
+  - 0 regressions on prior fixes.
+  - 226 Rust + 2,493 TS = 2,719 tests, 0 failures.
+  - Released as `complior@1.0.1` on npm, `complior-cli@1.0.1` on crates.io, and 5 platform binaries on GitHub Releases.
+</Update>
+
+<Update label="v1.0.0" description="2026-05-03">
   ## Initial public release
 
   First stable release of the Complior open-source compliance platform.
