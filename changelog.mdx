@@ -28,56 +28,102 @@ description: "Release history and notable changes for Complior."
 <Update label="v1.0.0" description="2026-05-03">
   ## Initial public release
 
-  First stable release of the Complior open-source compliance platform.
+  First general-availability release of the Complior open-source compliance platform. Production-ready for EU AI Act compliance scanning, evaluation, fix automation, Agent Passports, and report generation. All v1.0 pipeline commands (`init`, `scan`, `eval`, `fix`, `report`, `agent`/`passport`, `doctor`) are stable with full flag coverage and exhaustive E2E verification across 3 profile contexts.
 
   **Scan Engine**
-  - 5-layer static analysis (L1–L4 deterministic + L5 LLM opt-in)
-  - 57+ AI framework detection (LangChain, CrewAI, OpenAI, Anthropic, Vercel AI, HuggingFace)
-  - 37 secret patterns (API keys, tokens, passwords)
+  - 5-layer static analysis (L1 file presence, L2 document structure, L3 dependencies, L4 code patterns, L5 LLM opt-in)
+  - 57+ AI framework detection (LangChain, CrewAI, OpenAI, Anthropic, Vercel AI, HuggingFace, AutoGen, Bedrock, Ollama, etc.)
+  - 37 secret patterns (API keys, tokens, passwords) via NHI scanner
   - 33 code pattern rules across 8 compliance categories
-  - Cross-layer verification (7 consistency rules)
+  - Cross-layer verification (7 consistency rules including `cross-passport-code-mismatch`)
+  - Profile-aware filtering: `role × riskLevel × domain → applicableObligations` (16 / 67 / 46 across deployer-limited / provider-high-healthcare / deployer-high-finance)
+  - Incremental scan (mtime + SHA-256 cache, 10–50× speedup)
+  - Supply chain audit (45+ AI SDKs with CVE detection)
+  - Dependency scan (5 package managers with lock file parsing)
   - SARIF v2.1.0 and JSON output
 
   **Eval Engine**
-  - 680 dynamic probes across 6 categories (bias, transparency, security, conformity, accuracy, robustness)
-  - Deterministic + LLM-judged probe modes
+  - 680 dynamic probes across 11 EU AI Act conformity categories + 300 OWASP/MITRE security probes
+  - Profile-aware filtering: 319 / 335 / 327 of 388 tests applicable per profile
+  - Deterministic + LLM-judged probe modes (BYOK or hosted judge)
   - Custom request template support for any API format
-  - Adversarial red-team testing
+  - Auto-detect adapters (OpenAI, Anthropic, Google, custom)
+  - SSE streaming with real-time progress
+  - Refusal heuristic (correctly identifies model declines vs. failures)
+  - CI threshold gates (`--ci --threshold N`)
 
   **Agent Passport**
   - 36-field standardized AI system identity card
-  - Mode 1 (Auto): 65–70% auto-filled from code analysis
-  - Ed25519 cryptographic signing
+  - 3 creation modes: Auto (65–70% from code), Guided (interactive), Manual (full control)
+  - Ed25519 cryptographic signing with key management at `~/.config/complior/keys/`
   - Export: A2A, AIUC-1, NIST formats
-  - Evidence chain with SHA-256 hash linking
+  - Evidence chain (SHA-256 hash linking + ed25519 signatures, tamper-proof)
+  - Worker Notification template
+  - FRIA Generator (template + AI Enricher with scaffold/enhance modes)
 
   **Fix Engine**
-  - 18 remediation strategies (code, document, config)
-  - Preview with score impact prediction
-  - AI-assisted document generation (opt-in)
-  - Full undo capability
+  - 18 remediation strategies (code, document, config, cross-layer)
+  - Preview with score impact prediction (capped at 99 — estimates, not certainty)
+  - 14 EU AI Act + ISO 42001 document generators (FRIA, AI Policy, SoA, Risk Register, Worker Notification, Tech Documentation, Monitoring Policy, Data Governance, etc.)
+  - LLM-assisted document generation (`--ai` opt-in)
+  - ENRICH semantics for existing files (no overwrite of user edits)
+  - Full undo capability via backup chain
 
   **CLI & TUI**
-  - 40+ headless commands
-  - 9-page interactive TUI dashboard
-  - Background daemon with file watcher (200ms compliance gate)
-  - 5 color themes
+  - 40+ headless commands across 7 verbs (init, scan, eval, fix, report, agent, doctor)
+  - 9-page interactive TUI dashboard (Dashboard, Scan, Findings, Passport, Obligations, Tests, Report, Log, Chat)
+  - Background daemon with file watcher (200ms compliance gate, MCP server, HTTP API)
+  - 5 color themes (default, dark, dracula, nord, solarized)
+  - LLM Chat Service (TUI Chat page)
 
   **SDK**
-  - `@complior/sdk` runtime compliance middleware
-  - 14 hooks (pre + post)
+  - `@complior/sdk` runtime compliance middleware (proxy-based wrapping)
+  - 14 hooks (7 pre + 7 post): disclosure, prohibited, sanitize, logger, permission, rate-limit, disclosure-verify, content-marking, escalation, bias-check, headers, budget, action-log
   - 4 provider adapters (OpenAI, Anthropic, Google, Vercel AI)
-  - PII sanitization (50+ patterns, 6 categories)
-  - Prohibited practice detection (138 patterns)
+  - PII sanitization (50+ patterns, 6 categories with checksum validation: IBAN, BSN, NIR, PESEL, Codice Fiscale)
+  - Prohibited practice detection (138 patterns covering all 8 Art. 5 prohibitions)
+  - GDPR Art. 9 context-dependent matching (8 special categories)
+  - Domain hooks: HR, finance, healthcare, education, legal, content
+  - `compliorAgent()` agent-aware wrapper with passport enforcement
 
   **MCP Server**
-  - 8 MCP tools for AI agent integration
-  - Guard tools calling SDK hooks
+  - 8 MCP code tools for AI agent integration (Claude Desktop, Cursor, VS Code)
+  - stdio transport with input validation
+  - Compliance Proxy (policy engine + proxy interceptor)
+
+  **Security & Quality Assurance**
+  - Multi-framework scoring (EU AI Act + AIUC-1 + OWASP LLM Top 10 + MITRE ATLAS)
+  - AIUC-1 Certification Readiness score (15 requirements)
+  - Adversarial Test Runner (5 categories)
+  - `complior redteam` (300+ probes mapped to OWASP/MITRE)
+  - `complior import promptfoo` (external red-team results)
+  - `complior scan --deep` (Semgrep / Bandit / ModelScan via Tier 2)
+  - Test Generation (JS / Python / Go from passport constraints)
 
   **Compliance Coverage**
-  - 108 EU AI Act obligations mapped
-  - AIUC-1 (15 requirements)
-  - Multi-framework scoring (EU AI Act + AIUC-1)
+  - 108 EU AI Act obligations mapped (~65% automatic, ~25% template-assisted, ~10% manual via SaaS)
+  - AIUC-1 (15 requirements, ~70% covered)
+  - ISO 42001 (~65–70% covered: SoA generator, Risk Register generator, AI Policy template)
+  - Industry-specific patterns: HR, finance, healthcare, education, legal, content
+
+  **Reports**
+  - 5 output formats: human (terminal), JSON, Markdown, HTML (875+ KB rich report), PDF
+  - Profile-aware company profile block in reports
+  - Score breakdown with disclaimer + category breakdown + `/status/posture` endpoint
+  - `--share` flag for offline HTML report
+
+  **Distribution**
+  - npm: `complior` (CLI wrapper), `@complior/engine` (TS engine), `@complior/contracts` (sync schemas)
+  - crates.io: `complior-cli` (Rust binary)
+  - GitHub Releases: 5 platform binaries (Linux x86_64/aarch64, macOS Intel/ARM, Windows x86_64) with SHA-256 checksums
+  - License: AGPL-3.0-only
+
+  **Tests & CI**
+  - 226 Rust + 2,493 TypeScript = 2,719 total tests, 0 failures
+  - CI: Rust fmt + clippy + test + security audit, Engine typecheck + lint + test, npm audit, version consistency, contract tests (TS + Rust mirror against same fixture)
+  - 11 mini-hotfix milestones (V1-M30.1 → V1-M30.11) consecutively delivered with exhaustive 3-cycle E2E verification before tag
+
+  **EU AI Act enforcement**: August 2, 2026 (~91 days from this release).
 </Update>
 
 <Update label="v0.9.0-beta" description="2026-03-15">

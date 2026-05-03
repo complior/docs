@@ -37,10 +37,32 @@ description: "Install Complior CLI — npx, npm, curl, or cargo."
     ```
     Builds from source. Requires Rust toolchain.
   </Tab>
+  <Tab title="GitHub Release (binary)">
+    Download the prebuilt binary for your platform from [GitHub Releases](https://github.com/complior/complior/releases/latest):
+
+    | Platform | Asset |
+    |----------|-------|
+    | Linux x86_64 | `complior-linux-x86_64` |
+    | Linux ARM64 | `complior-linux-aarch64` |
+    | macOS Intel | `complior-macos-x86_64` |
+    | macOS Apple Silicon | `complior-macos-arm64` |
+    | Windows | `complior-windows-x86_64.exe` |
+
+    ```bash
+    # Example: Linux x86_64
+    curl -fsSL -o complior https://github.com/complior/complior/releases/latest/download/complior-linux-x86_64
+    chmod +x complior
+    sudo mv complior /usr/local/bin/
+
+    # Verify checksum (optional but recommended)
+    curl -fsSL -o checksums.txt https://github.com/complior/complior/releases/latest/download/checksums.txt
+    sha256sum -c checksums.txt --ignore-missing
+    ```
+  </Tab>
 </Tabs>
 
 <Info>
-  **Requirements:** Node.js 18+ for the Engine. Rust toolchain is only needed for `cargo install` or building TUI from source.
+  **Requirements:** Node.js 18+ for the Engine. Rust toolchain is only needed for `cargo install` or building TUI from source. The GitHub Release binary embeds the Rust CLI; the Engine still requires Node.js when invoked.
 </Info>
 
 ## Verify installation
