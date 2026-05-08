@@ -1,14 +1,20 @@
 ---
 title: "MCP Tools Reference"
 sidebarTitle: "Tools Reference"
-description: "Full input/output schema for all 7 Complior MCP tools."
+description: "Full input/output schema for all 13 Complior MCP tools."
 ---
 
-Complete schema reference for the 7 MCP tools exposed by `complior mcp`. Compatible with Claude Code, Cursor, Windsurf, OpenCode, Codex, Devin, and aider.
+Complete schema reference for the 13 MCP tools exposed by `complior mcp`. Compatible with Claude Code, Cursor, Windsurf, OpenCode, Codex, Devin, and aider.
 
 <Info>
   Source of truth: `engine/core/src/mcp/tools.ts` (Zod schemas) + `engine/core/src/mcp/handlers.ts` (handler logic).
 </Info>
+
+The toolset is organized into three groups:
+
+- **Core (7)** — scan, fix, status, explain, search_tool, classify, report (since v1.0.0)
+- **Builder (3)** — passport_init, doc_generate, redteam (since v1.1.0)
+- **Analytics (3)** — evidence_verify, drift_detect, obligations_status (since v1.1.0)
 
 ---
 
@@ -207,9 +213,252 @@ Generate a compliance report in JSON or Markdown format.
 
 ---
 
+## `complior_passport_init`
+
+<Tip>**New in v1.1.0** (Builder group). Generate Mode 1 Auto Agent Passport(s) by AST-scanning the project.</Tip>
+
+Each passport is ed25519-signed and includes 36 fields covering identity, capabilities, autonomy, permissions, oversight, and lifecycle.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `path` | `string` | No | Project path to scan for AI agents (default: current directory) |
+| `agentName` | `string` | No | Filter to a single agent name (skip if multiple agents discovered) |
+| `force` | `boolean` | No | Overwrite existing passports while preserving `created` / `deployed_since` timestamps |
+
+### Output
+
+```json
+{
+  "passports": [
+    {
+      "name": "support-bot",
+      "schema_version": "1.0.0",
+      "passport_id": "passport-support-bot",
+      "creation_mode": "auto",
+      "completeness": 85,
+      "framework": "openai",
+      "model": "gpt-4o",
+      "signature": { "algorithm": "ed25519", "value": "...", "public_key_id": "k1" }
+    }
+  ],
+  "count": 1,
+  "savedPaths": ["/repo/.complior/agents/support-bot-manifest.json"]
+}
+```
+
+<Warning>
+  Returns `isError: true` with `"No agents found"` when AST scan finds no agent configurations or SDK usage.
+</Warning>
+
+### Example agent usage
+
+> **You:** Generate a passport for our chatbot.
+>
+> **Agent** calls `complior_passport_init` with `{}` → returns 1 passport with 85% completeness, saved to `.complior/agents/`.
+
+---
+
+## `complior_doc_generate`
+
+<Tip>**New in v1.1.0** (Builder group). Generate one of 14 EU AI Act compliance documents from an existing passport.</Tip>
+
+Supported document types (one of):
+`ai-literacy`, `art5-screening`, `technical-documentation`, `incident-report`, `declaration-of-conformity`, `monitoring-policy`, `fria`, `worker-notification`, `risk-management`, `data-governance`, `qms`, `instructions-for-use`, `gpai-transparency`, `gpai-systemic-risk`.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `docType` | `string` (enum, 14 values) | Yes | Document type to generate |
+| `passportName` | `string` | Yes | Agent passport name (run `complior_passport_init` first if missing) |
+| `organization` | `string` | No | Organization name to use in the document (default: passport `organization` field) |
+| `path` | `string` | No | Project path (default: current directory) |
+
+### Output
+
+```json
+{
+  "docType": "fria",
+  "markdown": "# Fundamental Rights Impact Assessment\n\n...",
+  "prefilledFields": ["name", "organization", "system_type", "risk_classification"],
+  "manualFields": ["impact_assessment", "mitigation_plan", "approval_signature"],
+  "savedPath": "/repo/.complior/fria/support-bot-fria.md"
+}
+```
+
+<Warning>
+  Returns `isError: true` with `"Passport \"<name>\" not found"` if the passport doesn't exist.
+</Warning>
+
+### Example agent usage
+
+> **You:** Make a FRIA for our support bot.
+>
+> **Agent** calls `complior_doc_generate` with `{ docType: "fria", passportName: "support-bot" }` → returns markdown with prefilled fields and a list of manual fields the user still needs to complete.
+
+---
+
+## `complior_redteam`
+
+<Tip>**New in v1.1.0** (Builder group). Run 300+ adversarial security probes (OWASP LLM Top 10, MITRE ATLAS) against an AI endpoint.</Tip>
+
+<Warning>
+  **Long-running operation** — typically 30s–5min depending on concurrency and target latency. MCP clients should use a timeout of at least 5 minutes (e.g. `requestTimeout: 300000`).
+</Warning>
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `target` | `string` (URL) | Yes | Target AI endpoint URL (e.g., `https://api.example.com/v1/chat`) |
+| `apiKey` | `string` | No | API key for authenticated targets (forwarded as `Authorization` header) |
+| `concurrency` | `number` (1–50) | No | Parallel probe execution (default: 1) |
+| `threshold` | `number` (0–100) | No | Score threshold for pass/fail gate (default: no gate) |
+
+### Output
+
+```json
+{
+  "score": 78,
+  "totalTests": 300,
+  "passed": 240,
+  "failed": 50,
+  "securityScore": 73,
+  "securityGrade": "C"
+}
+```
+
+When `threshold` is set and the score falls below it, returns `isError: true` plus `thresholdFailed: true` and the failing `threshold` value.
+
+### Example agent usage
+
+> **You:** Red-team our chatbot endpoint with a minimum score of 80.
+>
+> **Agent** calls `complior_redteam` with `{ target: "https://...", threshold: 80 }` → if score 75, returns `isError` with `thresholdFailed: true`.
+
+---
+
+## `complior_evidence_verify`
+
+<Tip>**New in v1.1.0** (Analytics group). Verify integrity of the evidence chain (SHA-256 + ed25519).</Tip>
+
+Used for audit preparation — every scan and fix appends to the chain, so the chain is the cryptographic proof of compliance history.
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `path` | `string` | No | Project path containing `.complior/evidence/` (default: current directory) |
+
+### Output
+
+```json
+{
+  "valid": true,
+  "issues": [],
+  "totalEntries": 142,
+  "scanCount": 23,
+  "firstEntry": "2026-04-01T00:00:00Z",
+  "lastEntry": "2026-05-07T10:00:00Z"
+}
+```
+
+When the chain is tampered, `valid: false` with a `brokenAt` index and human-readable `issues`:
+
+```json
+{
+  "valid": false,
+  "brokenAt": 4,
+  "issues": ["Chain broken at index 4: hash mismatch"]
+}
+```
+
+<Warning>
+  Returns `isError: true` with `"Evidence chain not found or unreadable"` if the store cannot be read.
+</Warning>
+
+---
+
+## `complior_drift_detect`
+
+<Tip>**New in v1.1.0** (Analytics group). Compare the latest scan against the previous one and report compliance drift.</Tip>
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `path` | `string` | No | Project path with scan history (default: current directory) |
+
+### Output
+
+```json
+{
+  "scoreChange": -18,
+  "severity": "major",
+  "hasDrift": true,
+  "newFailures": [...],
+  "resolvedFailures": [...],
+  "affectedArticles": ["Art. 50", "Art. 12"]
+}
+```
+
+**Severity classification:**
+
+| Severity | Trigger |
+|----------|---------|
+| `none` | Score stable or improved |
+| `minor` | Score dropped 1–10 points |
+| `major` | Score dropped >10 points or new high-severity finding |
+| `critical` | New Art. 5 prohibited practice or critical-severity failure |
+
+When no previous scan exists, returns `severity: "none"` with `hasDrift: false` and a `message` field.
+
+---
+
+## `complior_obligations_status`
+
+<Tip>**New in v1.1.0** (Analytics group). Per-obligation coverage breakdown across all 108 EU AI Act obligations.</Tip>
+
+### Input
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `role` | `"provider" \| "deployer" \| "both"` | No | Filter by applicable role (default: all) |
+| `riskLevel` | `"unacceptable" \| "high" \| "limited" \| "minimal"` | No | Filter by EU AI Act risk classification (default: all) |
+| `coverage` | `"covered" \| "uncovered" \| "all"` | No | Filter by current scan coverage status (default: all) |
+
+### Output
+
+```json
+{
+  "total": 12,
+  "obligations": [
+    {
+      "obligation_id": "OBL-001",
+      "article_reference": "Art. 4",
+      "title": "AI Literacy",
+      "applies_to_role": "both",
+      "applies_to_risk_level": ["high", "limited"],
+      "severity": "high",
+      "coverage": "covered"
+    }
+  ]
+}
+```
+
+### Example agent usage
+
+> **You:** Show me high-risk obligations that aren't covered yet.
+>
+> **Agent** calls `complior_obligations_status` with `{ riskLevel: "high", coverage: "uncovered" }` → returns the gap list ranked by severity.
+
+---
+
 ## Common patterns
 
-### Scan → fix loop
+### Scan → fix loop (Core)
 
 ```
 complior_scan → top findings list
@@ -221,29 +470,41 @@ For each high-priority finding:
 complior_status (verify new score)
 ```
 
-### Risk classification before scan
+### Onboarding a new AI system (Builder)
 
 ```
 complior_classify (describe the system)
 ↓
-complior_search_tool (check each AI dependency)
+complior_passport_init (generate the Agent Passport)
 ↓
-complior_scan (full project audit)
+complior_doc_generate { docType: "fria" } (build the FRIA)
+↓
+complior_redteam (security probes against the endpoint)
 ↓
 complior_report (audit-ready output)
+```
+
+### Continuous compliance (Analytics)
+
+```
+complior_scan (latest scan)
+↓
+complior_drift_detect (what changed since last scan?)
+↓
+complior_obligations_status { coverage: "uncovered" } (where are we still exposed?)
+↓
+complior_evidence_verify (audit chain still healthy?)
 ```
 
 ---
 
 ## Roadmap
 
-The current 7 tools cover the core scan/fix/explain workflow. Post-v1.0 plans (V2-M02):
+Current set: **13 tools** (Core 7 + Builder 3 + Analytics 3).
 
-- `complior_passport_init` — Generate Agent Passport from project
-- `complior_redteam` — Trigger 300+ adversarial probes
-- `complior_doc_generate` — Generate compliance documents (FRIA, AI Policy, etc.)
-- `complior_evidence_verify` — Verify evidence chain integrity
-- Guard tools (V2-M03, after Guard MVP)
-- Analytics tools (usage stats, drift detection)
+Future additions (post-v1.1.0):
+
+- **Guard tools** (V2-M03, after Guard MVP G-M01) — `complior_guard_check`, `complior_guard_pii`, `complior_guard_bias`
+- **SaaS Dashboard tools** (V2-M07, after cloud deploy) — fleet view, sync status
 
 See [GitHub Discussions](https://github.com/complior/complior/discussions) for proposals.
